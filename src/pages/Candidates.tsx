@@ -92,7 +92,14 @@ const Candidates = () => {
       toast({ title: "LinkedIn revealed", description: "Click again to open" });
       return;
     }
-    window.open(profile.linkedin_url, "_blank");
+    
+    // Ensure LinkedIn URL has proper protocol
+    let linkedinUrl = profile.linkedin_url;
+    if (!linkedinUrl.startsWith('http://') && !linkedinUrl.startsWith('https://')) {
+      linkedinUrl = 'https://' + linkedinUrl;
+    }
+    
+    window.open(linkedinUrl, "_blank");
   };
 
   return (
