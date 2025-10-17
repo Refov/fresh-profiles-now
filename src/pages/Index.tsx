@@ -95,6 +95,19 @@ const Index = () => {
               </div>
             </div>
           </div>
+
+          {/* Footer */}
+          <div className="mt-20 pt-12 border-t border-gray-200">
+            <div className="text-center">
+              <p className="text-gray-600 mb-4">
+                Questions? Contact us at <a href="mailto:hello@refov.com" className="text-blue-600 hover:text-blue-700 font-medium">hello@refov.com</a>
+              </p>
+              <div className="flex justify-center space-x-6 text-sm">
+                <a href="/privacy" className="text-gray-500 hover:text-gray-700">Privacy Policy</a>
+                <a href="/terms" className="text-gray-500 hover:text-gray-700">Terms of Service</a>
+              </div>
+            </div>
+          </div>
         </div>
       </main>
     </div>
