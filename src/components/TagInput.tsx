@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 
 interface TagInputProps {
@@ -26,32 +27,49 @@ const TagInput = ({ value, onChange, maxTags = 8, placeholder = "Type and press 
     }
   };
 
+  const handleAdd = () => {
+    const v = inputValue.trim();
+    if (!v) return;
+    if (value.length >= maxTags) return;
+    if (value.includes(v)) return;
+    onChange([...value, v]);
+    setInputValue("");
+  };
+
   const removeTag = (tagToRemove: string) => {
     onChange(value.filter((tag) => tag !== tagToRemove));
   };
 
   return (
     <div className="space-y-2">
-      <Input
-        value={inputValue}
-        onChange={(e) => setInputValue(e.target.value)}
-        onKeyDown={handleKeyDown}
-        placeholder={placeholder}
-        disabled={value.length >= maxTags}
-      />
-      <div className="flex flex-wrap gap-2">
-        {value.map((tag) => (
-          <Badge key={tag} variant="secondary" className="gap-1">
-            {tag}
-            <button
-              type="button"
-              onClick={() => removeTag(tag)}
-              className="hover:text-destructive"
-            >
-              <X className="w-3 h-3" />
-            </button>
-          </Badge>
-        ))}
+      <div className="flex gap-2">
+        <Input
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder={placeholder}
+          disabled={value.length >= maxTags}
+        />
+        <Button type="button" onClick={handleAdd} disabled={!inputValue.trim() || value.length >= maxTags}>
+          + Add
+        </Button>
+      </div>
+      <div className="flex items-center justify-between">
+        <div className="flex flex-wrap gap-2">
+          {value.map((tag) => (
+            <Badge key={tag} variant="secondary" className="gap-1">
+              {tag}
+              <button
+                type="button"
+                onClick={() => removeTag(tag)}
+                className="hover:text-destructive"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </Badge>
+          ))}
+        </div>
+        <span className="text-xs text-muted-foreground">{value.length}/{maxTags}</span>
       </div>
     </div>
   );

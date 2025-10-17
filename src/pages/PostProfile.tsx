@@ -9,7 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { addProfile } from "@/lib/localProfiles";
 import TagInput from "@/components/TagInput";
 import TurnstileWidget from "@/components/TurnstileWidget";
 
@@ -23,7 +23,7 @@ const PostProfile = () => {
     name: "",
     surname: "",
     jobTitle: "",
-    workMode: "remote" as "onsite_hybrid" | "remote",
+    workModes: [] as Array<"onsite" | "hybrid" | "remote">,
     city: "",
     country: "",
     aboutMe: "",
@@ -53,10 +53,64 @@ const PostProfile = () => {
       return;
     }
 
-    if (formData.workMode === "onsite_hybrid" && !formData.city) {
+    if (!formData.name.trim()) {
+      toast({
+        title: "Name required",
+        description: "Please enter your name",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!formData.surname.trim()) {
+      toast({
+        title: "Surname required",
+        description: "Please enter your surname",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!formData.jobTitle.trim()) {
+      toast({
+        title: "Job title required",
+        description: "Please enter your job title",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (formData.workModes.length === 0) {
+      toast({
+        title: "Work mode required",
+        description: "Please select at least one work mode",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!formData.city.trim()) {
       toast({
         title: "City required",
-        description: "Please enter a city for onsite/hybrid work",
+        description: "Please enter your city",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!formData.country.trim()) {
+      toast({
+        title: "Country required",
+        description: "Please enter your country",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!formData.aboutMe.trim()) {
+      toast({
+        title: "About Me required",
+        description: "Please tell us about yourself",
         variant: "destructive",
       });
       return;
@@ -66,6 +120,15 @@ const PostProfile = () => {
       toast({
         title: "About Me too long",
         description: "Please keep your About Me under 600 characters",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (formData.coreSkills.length === 0) {
+      toast({
+        title: "Skills required",
+        description: "Please add at least one core skill",
         variant: "destructive",
       });
       return;
@@ -89,42 +152,41 @@ const PostProfile = () => {
       return;
     }
 
-    setIsSubmitting(true);
-
+    // Check duplicate by LinkedIn
     try {
-      // Check rate limit and insert profile via edge function
-      const { data, error } = await supabase.functions.invoke("submit-profile", {
-        body: {
-          profile: {
-            name: formData.name,
-            surname: formData.surname,
-            job_title: formData.jobTitle,
-            work_mode: formData.workMode,
-            city: formData.workMode === "onsite_hybrid" ? formData.city : null,
-            country: formData.country,
-            about_me: formData.aboutMe,
-            linkedin_url: formData.linkedinUrl,
-            core_skills: formData.coreSkills,
-            expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-          },
-          turnstileToken,
-        },
-      });
-
-      if (error) throw error;
-
-      if (data.error) {
+      const existing = JSON.parse(localStorage.getItem("profiles") || "[]") as Array<{ linkedin_url: string }>;
+      const norm = (u: string) => {
+        const x = u.trim().toLowerCase();
+        return x.endsWith("/") ? x.slice(0, -1) : x;
+      };
+      if (existing.some(p => norm(p.linkedin_url) === norm(formData.linkedinUrl))) {
         toast({
-          title: "Error",
-          description: data.error,
+          title: "Duplicate LinkedIn",
+          description: "A profile with this LinkedIn already exists",
           variant: "destructive",
         });
         return;
       }
+    } catch {}
+
+    setIsSubmitting(true);
+
+    try {
+      addProfile({
+        name: formData.name,
+        surname: formData.surname,
+        job_title: formData.jobTitle,
+        work_modes: formData.workModes,
+        city: formData.city || null,
+        country: formData.country,
+        about_me: formData.aboutMe,
+        linkedin_url: formData.linkedinUrl,
+        core_skills: formData.coreSkills,
+      });
 
       toast({
         title: "Profile posted!",
-        description: "Your profile will be visible for 30 days",
+        description: "Stored locally for 30 days",
       });
 
       navigate("/candidates");
@@ -193,39 +255,37 @@ const PostProfile = () => {
               </div>
 
               <div className="space-y-2">
-                <Label>Work Mode</Label>
-                <RadioGroup
-                  value={formData.workMode}
-                  onValueChange={(value: "onsite_hybrid" | "remote") =>
-                    setFormData({ ...formData, workMode: value })
-                  }
-                >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="onsite_hybrid" id="onsite" />
-                    <Label htmlFor="onsite" className="font-normal cursor-pointer">
-                      Onsite/Hybrid
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="remote" id="remote" />
-                    <Label htmlFor="remote" className="font-normal cursor-pointer">
-                      Remote
-                    </Label>
-                  </div>
-                </RadioGroup>
+                <Label>Work Modes</Label>
+                <div className="flex flex-wrap gap-4">
+                  {(["onsite","hybrid","remote"] as const).map(mode => (
+                    <div key={mode} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`wm-${mode}`}
+                        className="rounded-none"
+                        checked={formData.workModes.includes(mode)}
+                        onCheckedChange={(checked) => {
+                          setFormData(prev => {
+                            const next = new Set(prev.workModes);
+                            if (checked) next.add(mode); else next.delete(mode);
+                            return { ...prev, workModes: Array.from(next) as Array<typeof mode> };
+                          });
+                        }}
+                      />
+                      <Label htmlFor={`wm-${mode}`} className="font-normal cursor-pointer capitalize">{mode}</Label>
+                    </div>
+                  ))}
+                </div>
               </div>
 
-              {formData.workMode === "onsite_hybrid" && (
-                <div className="space-y-2">
-                  <Label htmlFor="city">City</Label>
-                  <Input
-                    id="city"
-                    required
-                    value={formData.city}
-                    onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                  />
-                </div>
-              )}
+              <div className="space-y-2">
+                <Label htmlFor="city">City</Label>
+                <Input
+                  id="city"
+                  required
+                  value={formData.city}
+                  onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                />
+              </div>
 
               <div className="space-y-2">
                 <Label htmlFor="country">Country</Label>

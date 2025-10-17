@@ -4,8 +4,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MapPin, Briefcase, ExternalLink } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import TurnstileWidget from "./TurnstileWidget";
 
 interface ProfileCardProps {
   profile: {
@@ -13,7 +11,7 @@ interface ProfileCardProps {
     name: string;
     surname: string;
     job_title: string;
-    work_mode: string;
+    work_modes: Array<"onsite" | "hybrid" | "remote">;
     city: string | null;
     country: string;
     about_me: string;
@@ -26,57 +24,19 @@ interface ProfileCardProps {
 const ProfileCard = ({ profile }: ProfileCardProps) => {
   const { toast } = useToast();
   const [revealed, setRevealed] = useState(false);
-  const [showCaptcha, setShowCaptcha] = useState(false);
-  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
 
   const getDaysAgo = (date: string) => {
     const days = Math.floor((Date.now() - new Date(date).getTime()) / (1000 * 60 * 60 * 24));
     return days === 0 ? "today" : `${days} day${days > 1 ? "s" : ""} ago`;
   };
 
-  const handleReveal = async () => {
+  const handleReveal = () => {
     if (!revealed) {
-      setShowCaptcha(true);
+      setRevealed(true);
+      toast({ title: "LinkedIn revealed", description: "Click again to open" });
       return;
     }
     window.open(profile.linkedin_url, "_blank");
-  };
-
-  const handleCaptchaVerify = async (token: string) => {
-    setTurnstileToken(token);
-    
-    try {
-      const { data, error } = await supabase.functions.invoke("reveal-linkedin", {
-        body: {
-          profileId: profile.id,
-          turnstileToken: token,
-        },
-      });
-
-      if (error) throw error;
-
-      if (data.error) {
-        toast({
-          title: "Error",
-          description: data.error,
-          variant: "destructive",
-        });
-        return;
-      }
-
-      setRevealed(true);
-      setShowCaptcha(false);
-      toast({
-        title: "LinkedIn revealed",
-        description: "Click the button again to open the profile",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Failed to reveal LinkedIn",
-        description: error.message || "Please try again",
-        variant: "destructive",
-      });
-    }
   };
 
   return (
@@ -92,9 +52,13 @@ const ProfileCard = ({ profile }: ProfileCardProps) => {
               {profile.job_title}
             </div>
           </div>
-          <Badge variant={profile.work_mode === "remote" ? "default" : "secondary"}>
-            {profile.work_mode === "remote" ? "Remote" : "Onsite/Hybrid"}
-          </Badge>
+          <div className="flex gap-2">
+            {profile.work_modes.map((m) => (
+              <Badge key={m} variant="secondary">
+                {m === "onsite" ? "Onsite" : m.charAt(0).toUpperCase() + m.slice(1)}
+              </Badge>
+            ))}
+          </div>
         </div>
 
         <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
@@ -116,9 +80,6 @@ const ProfileCard = ({ profile }: ProfileCardProps) => {
       </CardContent>
 
       <CardFooter className="flex flex-col gap-3">
-        {showCaptcha && !revealed && (
-          <TurnstileWidget onVerify={handleCaptchaVerify} />
-        )}
         <Button
           onClick={handleReveal}
           className="w-full"

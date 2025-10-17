@@ -2,27 +2,17 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import TagInput from "@/components/TagInput";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
-import { ArrowLeft, Search } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { Badge } from "@/components/ui/badge";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { ArrowLeft, Search, MapPin, Briefcase, ExternalLink } from "lucide-react";
+import { getAllProfiles, filterProfiles, LocalProfile } from "@/lib/localProfiles";
 import ProfileCard from "@/components/ProfileCard";
 import { useToast } from "@/hooks/use-toast";
 
-interface Profile {
-  id: string;
-  name: string;
-  surname: string;
-  job_title: string;
-  work_mode: string;
-  city: string | null;
-  country: string;
-  about_me: string;
-  linkedin_url: string;
-  core_skills: string[];
-  created_at: string;
-  updated_at: string;
-}
+type Profile = LocalProfile;
 
 const Candidates = () => {
   const navigate = useNavigate();
@@ -33,48 +23,44 @@ const Candidates = () => {
     city: "",
     country: "",
     jobTitle: "",
-    skills: "",
+    skills: [] as string[],
   });
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
+  const [revealedIds, setRevealedIds] = useState<Set<string>>(new Set());
   const ITEMS_PER_PAGE = 20;
+
+  const getDaysAgo = (iso: string) => {
+    const created = new Date(iso).getTime();
+    if (!isFinite(created)) return "";
+    const days = Math.floor((Date.now() - created) / (1000 * 60 * 60 * 24));
+    return days === 0 ? "today" : `${days} day${days > 1 ? "s" : ""} ago`;
+  };
 
   const fetchProfiles = async (resetPage = false) => {
     setLoading(true);
     const currentPage = resetPage ? 0 : page;
 
     try {
-      let query = supabase
-        .from("profiles")
-        .select("*", { count: "exact" })
-        .order("created_at", { ascending: false })
-        .range(currentPage * ITEMS_PER_PAGE, (currentPage + 1) * ITEMS_PER_PAGE - 1);
-
-      if (filters.city) {
-        query = query.ilike("city", `%${filters.city}%`);
-      }
-      if (filters.country) {
-        query = query.ilike("country", `%${filters.country}%`);
-      }
-      if (filters.jobTitle) {
-        query = query.ilike("job_title", `%${filters.jobTitle}%`);
-      }
-      if (filters.skills) {
-        query = query.contains("core_skills", [filters.skills]);
-      }
-
-      const { data, error, count } = await query;
-
-      if (error) throw error;
+      const all = getAllProfiles();
+      const filtered = filterProfiles(all, {
+        city: filters.city,
+        country: filters.country,
+        jobTitle: filters.jobTitle,
+        skills: filters.skills,
+      });
+      const start = currentPage * ITEMS_PER_PAGE;
+      const end = start + ITEMS_PER_PAGE;
+      const pageItems = filtered.slice(start, end);
 
       if (resetPage) {
-        setProfiles(data || []);
+        setProfiles(pageItems);
         setPage(0);
       } else {
-        setProfiles((prev) => [...prev, ...(data || [])]);
+        setProfiles((prev) => [...prev, ...pageItems]);
       }
 
-      setHasMore(data && data.length === ITEMS_PER_PAGE && count ? count > (currentPage + 1) * ITEMS_PER_PAGE : false);
+      setHasMore(end < filtered.length);
     } catch (error: any) {
       toast({
         title: "Error loading profiles",
@@ -97,6 +83,15 @@ const Candidates = () => {
   const handleLoadMore = () => {
     setPage((prev) => prev + 1);
     fetchProfiles();
+  };
+
+  const handleReveal = (profile: Profile) => {
+    if (!revealedIds.has(profile.id)) {
+      setRevealedIds(new Set([...Array.from(revealedIds), profile.id]));
+      toast({ title: "LinkedIn revealed", description: "Click again to open" });
+      return;
+    }
+    window.open(profile.linkedin_url, "_blank");
   };
 
   return (
@@ -143,13 +138,14 @@ const Candidates = () => {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="skills">Skills</Label>
-                <Input
-                  id="skills"
-                  placeholder="Search by skill"
+                <Label>Skills</Label>
+                <TagInput
                   value={filters.skills}
-                  onChange={(e) => setFilters({ ...filters, skills: e.target.value })}
+                  onChange={(skills) => setFilters({ ...filters, skills })}
+                  maxTags={8}
+                  placeholder="Type a skill and click + Add"
                 />
+                <p className="text-xs text-muted-foreground">Matches candidates that contain all listed skills.</p>
               </div>
             </div>
             <Button onClick={handleSearch} className="w-full md:w-auto">
@@ -169,11 +165,54 @@ const Candidates = () => {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <Accordion type="single" collapsible className="w-full mb-8">
               {profiles.map((profile) => (
-                <ProfileCard key={profile.id} profile={profile} />
+                <AccordionItem key={profile.id} value={profile.id}>
+                  <AccordionTrigger>
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full gap-2 text-left">
+                      <div>
+                        <div className="text-base sm:text-lg font-semibold">
+                          {profile.name} {profile.surname}
+                        </div>
+                        <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground mt-1">
+                          <Briefcase className="w-4 h-4" />
+                          {profile.job_title}
+                          <span className="mx-2">•</span>
+                          <span className="whitespace-nowrap">Posted {getDaysAgo(profile.created_at)}</span>
+                        </div>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm text-muted-foreground">
+                        <MapPin className="w-4 h-4" />
+                        {profile.city ? `${profile.city}, ${profile.country}` : profile.country}
+                        <div className="flex flex-wrap gap-2 ml-2">
+                          {profile.work_modes.map((m) => (
+                            <Badge key={m} variant="secondary">
+                              {m === "onsite" ? "Onsite" : m.charAt(0).toUpperCase() + m.slice(1)}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <div className="p-4 pt-0 space-y-4">
+                      <p className="text-sm whitespace-pre-wrap">{profile.about_me}</p>
+                      <div className="flex flex-wrap gap-2">
+                        {profile.core_skills.map((s) => (
+                          <Badge key={s} variant="outline">{s}</Badge>
+                        ))}
+                      </div>
+                      <div className="pt-2">
+                        <Button onClick={() => handleReveal(profile)} className="w-full sm:w-auto" variant={revealedIds.has(profile.id) ? "default" : "outline"}>
+                          <ExternalLink className="w-4 h-4 mr-2" />
+                          {revealedIds.has(profile.id) ? "Open LinkedIn Profile" : "Reveal LinkedIn"}
+                        </Button>
+                      </div>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
               ))}
-            </div>
+            </Accordion>
 
             {hasMore && (
               <div className="text-center">
