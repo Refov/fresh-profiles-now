@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Input } from './ui/input';
 
 interface LocationAutocompleteProps {
@@ -9,12 +9,6 @@ interface LocationAutocompleteProps {
   className?: string;
 }
 
-declare global {
-  interface Window {
-    google: any;
-  }
-}
-
 const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
   value,
   onChange,
@@ -23,109 +17,100 @@ const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
   className = ""
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
-  const autocompleteRef = useRef<any>(null);
-  const [isLoaded, setIsLoaded] = useState(false);
-  const [isTyping, setIsTyping] = useState(false);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
-  useEffect(() => {
-    // Load Google Places API script
-    if (!window.google) {
-      const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyBvOkBwJcTjqBwJcTjqBwJcTjqBwJcTjqBw&libraries=places`;
-      script.async = true;
-      script.defer = true;
-      script.onload = () => {
-        setIsLoaded(true);
-        initAutocomplete();
-      };
-      document.head.appendChild(script);
-    } else {
-      setIsLoaded(true);
-      initAutocomplete();
-    }
-
-    return () => {
-      if (autocompleteRef.current) {
-        window.google.maps.event.clearInstanceListeners(autocompleteRef.current);
-      }
-    };
-  }, []);
-
-  const initAutocomplete = () => {
-    if (!window.google || !inputRef.current) return;
-
-    // Only initialize autocomplete when user stops typing
-    const input = inputRef.current;
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const inputValue = e.target.value;
+    onChange(inputValue);
     
-    const handleInput = (e: Event) => {
-      setIsTyping(true);
-      const target = e.target as HTMLInputElement;
-      onChange(target.value);
-    };
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        // Don't trigger autocomplete on Enter
-        return;
-      }
-    };
-
-    input.addEventListener('input', handleInput);
-    input.addEventListener('keydown', handleKeyDown);
-
-    // Initialize autocomplete with minimal configuration
-    autocompleteRef.current = new window.google.maps.places.Autocomplete(input, {
-      types: ['(cities)'],
-      fields: ['address_components', 'formatted_address', 'geometry', 'name'],
-      componentRestrictions: { country: [] } // Allow all countries
-    });
-
-    autocompleteRef.current.addListener('place_changed', () => {
-      const place = autocompleteRef.current.getPlace();
+    // Simple city suggestions without Google Places API
+    if (inputValue.length > 1) {
+      const commonCities = [
+        'New York, USA', 'London, UK', 'Paris, France', 'Tokyo, Japan', 'Sydney, Australia',
+        'Berlin, Germany', 'Madrid, Spain', 'Rome, Italy', 'Amsterdam, Netherlands',
+        'Vancouver, Canada', 'Toronto, Canada', 'Los Angeles, USA', 'Chicago, USA',
+        'Miami, USA', 'Boston, USA', 'Seattle, USA', 'San Francisco, USA',
+        'Dublin, Ireland', 'Edinburgh, UK', 'Manchester, UK', 'Birmingham, UK',
+        'Barcelona, Spain', 'Lisbon, Portugal', 'Vienna, Austria', 'Prague, Czech Republic',
+        'Warsaw, Poland', 'Stockholm, Sweden', 'Copenhagen, Denmark', 'Oslo, Norway',
+        'Helsinki, Finland', 'Zurich, Switzerland', 'Brussels, Belgium', 'Luxembourg',
+        'Monaco', 'Andorra', 'San Marino', 'Vatican City', 'Liechtenstein',
+        'Singapore', 'Hong Kong', 'Dubai, UAE', 'Tel Aviv, Israel', 'Jerusalem, Israel',
+        'Cairo, Egypt', 'Cape Town, South Africa', 'Johannesburg, South Africa',
+        'Nairobi, Kenya', 'Lagos, Nigeria', 'Casablanca, Morocco', 'Tunis, Tunisia',
+        'Algiers, Algeria', 'Tripoli, Libya', 'Khartoum, Sudan', 'Addis Ababa, Ethiopia',
+        'Kampala, Uganda', 'Dar es Salaam, Tanzania', 'Lusaka, Zambia', 'Harare, Zimbabwe',
+        'Gaborone, Botswana', 'Windhoek, Namibia', 'Maseru, Lesotho', 'Mbabane, Swaziland',
+        'Maputo, Mozambique', 'Antananarivo, Madagascar', 'Port Louis, Mauritius',
+        'Victoria, Seychelles', 'Malabo, Equatorial Guinea', 'Banjul, Gambia',
+        'Bissau, Guinea-Bissau', 'Conakry, Guinea', 'Freetown, Sierra Leone',
+        'Monrovia, Liberia', 'Abidjan, Ivory Coast', 'Accra, Ghana', 'Lome, Togo',
+        'Cotonou, Benin', 'Niamey, Niger', 'Ouagadougou, Burkina Faso', 'Bamako, Mali',
+        'Dakar, Senegal', 'Nouakchott, Mauritania', 'Nouadhibou, Mauritania',
+        'El Aaiun, Western Sahara', 'Laayoune, Western Sahara', 'Smara, Western Sahara',
+        'Dakhla, Western Sahara', 'Boujdour, Western Sahara', 'Aousserd, Western Sahara',
+        'Guerguerat, Western Sahara', 'Mahbes, Western Sahara', 'Farsia, Western Sahara',
+        'Bir Lahlou, Western Sahara', 'Tifariti, Western Sahara', 'Zouerate, Mauritania',
+        'Atar, Mauritania', 'Rosso, Mauritania', 'Kaedi, Mauritania', 'Kiffa, Mauritania',
+        'Aleg, Mauritania', 'Selibaby, Mauritania', 'Nema, Mauritania', 'Ain Ehel Taya, Mauritania',
+        'Tidjikja, Mauritania', 'Zouerate, Mauritania', 'Atar, Mauritania', 'Rosso, Mauritania'
+      ];
       
-      if (!place.geometry) {
-        return;
-      }
-
-      let city = '';
-      let country = '';
+      const filtered = commonCities.filter(city => 
+        city.toLowerCase().includes(inputValue.toLowerCase())
+      ).slice(0, 5);
       
-      for (const component of place.address_components) {
-        if (component.types.includes('locality') || component.types.includes('administrative_area_level_1')) {
-          city = component.long_name;
-        }
-        if (component.types.includes('country')) {
-          country = component.long_name;
-        }
-      }
+      setSuggestions(filtered);
+      setShowSuggestions(true);
+    } else {
+      setSuggestions([]);
+      setShowSuggestions(false);
+    }
+  };
 
-      if (!city) {
-        city = place.formatted_address.split(',')[0];
-      }
+  const handleSuggestionClick = (suggestion: string) => {
+    onChange(suggestion);
+    setShowSuggestions(false);
+    
+    // Parse city and country from suggestion
+    const parts = suggestion.split(',').map(p => p.trim());
+    const city = parts[0];
+    const country = parts.slice(1).join(', ');
+    
+    onPlaceSelect(city, country);
+  };
 
-      onChange(place.formatted_address);
-      onPlaceSelect(city, country);
-      setIsTyping(false);
-    });
-
-    return () => {
-      input.removeEventListener('input', handleInput);
-      input.removeEventListener('keydown', handleKeyDown);
-    };
+  const handleBlur = () => {
+    // Delay hiding suggestions to allow clicking
+    setTimeout(() => setShowSuggestions(false), 200);
   };
 
   return (
-    <Input
-      ref={inputRef}
-      value={value}
-      onChange={(e) => {
-        setIsTyping(true);
-        onChange(e.target.value);
-      }}
-      placeholder={placeholder}
-      className={className}
-    />
+    <div className="relative">
+      <Input
+        ref={inputRef}
+        value={value}
+        onChange={handleInputChange}
+        onBlur={handleBlur}
+        onFocus={() => setShowSuggestions(suggestions.length > 0)}
+        placeholder={placeholder}
+        className={className}
+      />
+      {showSuggestions && suggestions.length > 0 && (
+        <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto">
+          {suggestions.map((suggestion, index) => (
+            <div
+              key={index}
+              className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm"
+              onClick={() => handleSuggestionClick(suggestion)}
+            >
+              {suggestion}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   );
 };
 
