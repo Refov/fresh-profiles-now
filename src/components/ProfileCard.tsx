@@ -53,7 +53,15 @@ const ProfileCard = ({ profile }: ProfileCardProps) => {
               <h3 className="text-xl font-semibold">
                 {profile.name} {profile.surname}
               </h3>
-              <div className="space-y-2 mt-2">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
+                <Briefcase className="w-4 h-4" />
+                {profile.job_title}
+              </div>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
+                <MapPin className="w-4 h-4" />
+                {profile.city ? `${profile.city}, ${profile.country}` : profile.country}
+              </div>
+              <div className="space-y-2 mt-3">
                 <div className="flex flex-wrap gap-1">
                   {profile.work_modes.filter(m => ["onsite", "hybrid", "remote"].includes(m)).map((m) => {
                     const getDisplayText = (mode: string) => {
@@ -90,14 +98,6 @@ const ProfileCard = ({ profile }: ProfileCardProps) => {
                     );
                   })}
                 </div>
-              </div>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground mt-3">
-                <Briefcase className="w-4 h-4" />
-                {profile.job_title}
-              </div>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
-                <MapPin className="w-4 h-4" />
-                {profile.city ? `${profile.city}, ${profile.country}` : profile.country}
               </div>
             </div>
 
