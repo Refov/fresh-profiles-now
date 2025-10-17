@@ -11,6 +11,7 @@ import { ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { saveProfile } from "@/lib/supabaseProfiles";
 import TagInput from "@/components/TagInput";
+import LocationAutocomplete from "@/components/LocationAutocomplete";
 
 const PostProfile = () => {
   const navigate = useNavigate();
@@ -306,22 +307,34 @@ const PostProfile = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="city">City</Label>
-                <Input
-                  id="city"
-                  required
-                  value={formData.city}
-                  onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="country">Country</Label>
-                <Input
-                  id="country"
-                  required
-                  value={formData.country}
-                  onChange={(e) => setFormData({ ...formData, country: e.target.value })}
+                <Label htmlFor="location">Location</Label>
+                <LocationAutocomplete
+                  value={`${formData.city}, ${formData.country}`.replace(/^, |, $/, '')}
+                  onChange={(value) => {
+                    // Parse the combined value back to city and country
+                    const parts = value.split(',').map(p => p.trim());
+                    if (parts.length >= 2) {
+                      setFormData({ 
+                        ...formData, 
+                        city: parts[0], 
+                        country: parts.slice(1).join(', ') 
+                      });
+                    } else if (parts.length === 1) {
+                      setFormData({ 
+                        ...formData, 
+                        city: parts[0], 
+                        country: '' 
+                      });
+                    }
+                  }}
+                  onPlaceSelect={(city, country) => {
+                    setFormData({ 
+                      ...formData, 
+                      city, 
+                      country 
+                    });
+                  }}
+                  placeholder="Enter your city and country"
                 />
               </div>
 
