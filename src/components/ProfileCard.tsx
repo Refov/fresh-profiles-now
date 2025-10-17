@@ -59,32 +59,43 @@ const ProfileCard = ({ profile }: ProfileCardProps) => {
               {profile.job_title}
             </div>
           </div>
-          <div className="flex flex-wrap gap-2">
-            {profile.work_modes.map((m) => {
-              const getDisplayText = (mode: string) => {
-                switch (mode) {
-                  case "onsite": return "Onsite";
-                  case "hybrid": return "Hybrid";
-                  case "remote": return "Remote";
-                  case "fulltime": return "Full Time";
-                  case "parttime": return "Part Time";
-                  case "contract": return "Contract";
-                  default: return mode.charAt(0).toUpperCase() + mode.slice(1);
-                }
-              };
-              
-              const getBadgeVariant = (mode: string) => {
-                if (["onsite", "hybrid", "remote"].includes(mode)) return "secondary";
-                if (["fulltime", "parttime", "contract"].includes(mode)) return "outline";
-                return "secondary";
-              };
-              
-              return (
-                <Badge key={m} variant={getBadgeVariant(m)}>
-                  {getDisplayText(m)}
-                </Badge>
-              );
-            })}
+          <div className="space-y-2">
+            <div className="flex flex-wrap gap-1">
+              {profile.work_modes.filter(m => ["onsite", "hybrid", "remote"].includes(m)).map((m) => {
+                const getDisplayText = (mode: string) => {
+                  switch (mode) {
+                    case "onsite": return "Onsite";
+                    case "hybrid": return "Hybrid";
+                    case "remote": return "Remote";
+                    default: return mode.charAt(0).toUpperCase() + mode.slice(1);
+                  }
+                };
+                
+                return (
+                  <Badge key={m} variant="secondary" className="text-xs">
+                    {getDisplayText(m)}
+                  </Badge>
+                );
+              })}
+            </div>
+            <div className="flex flex-wrap gap-1">
+              {profile.work_modes.filter(m => ["fulltime", "parttime", "contract"].includes(m)).map((m) => {
+                const getDisplayText = (mode: string) => {
+                  switch (mode) {
+                    case "fulltime": return "Full Time";
+                    case "parttime": return "Part Time";
+                    case "contract": return "Contract";
+                    default: return mode.charAt(0).toUpperCase() + mode.slice(1);
+                  }
+                };
+                
+                return (
+                  <Badge key={m} variant="outline" className="text-xs">
+                    {getDisplayText(m)}
+                  </Badge>
+                );
+              })}
+            </div>
           </div>
         </div>
 
