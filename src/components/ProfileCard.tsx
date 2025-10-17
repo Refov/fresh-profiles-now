@@ -54,50 +54,46 @@ const ProfileCard = ({ profile }: ProfileCardProps) => {
                 {profile.name} {profile.surname}
               </h3>
               <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
-                <Briefcase className="w-4 h-4" />
-                {profile.job_title}
-              </div>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
                 <MapPin className="w-4 h-4" />
                 {profile.city ? `${profile.city}, ${profile.country}` : profile.country}
               </div>
-              <div className="space-y-2 mt-3">
-                <div className="flex flex-wrap gap-1">
-                  {profile.work_modes.filter(m => ["onsite", "hybrid", "remote"].includes(m)).map((m) => {
-                    const getDisplayText = (mode: string) => {
-                      switch (mode) {
-                        case "onsite": return "Onsite";
-                        case "hybrid": return "Hybrid";
-                        case "remote": return "Remote";
-                        default: return mode.charAt(0).toUpperCase() + mode.slice(1);
-                      }
-                    };
+              <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
+                <Briefcase className="w-4 h-4" />
+                {profile.job_title}
+              </div>
+              <div className="flex flex-wrap gap-1 mt-2">
+                {profile.work_modes.filter(m => ["onsite", "hybrid", "remote"].includes(m)).map((m) => {
+                  const getDisplayText = (mode: string) => {
+                    switch (mode) {
+                      case "onsite": return "Onsite";
+                      case "hybrid": return "Hybrid";
+                      case "remote": return "Remote";
+                      default: return mode.charAt(0).toUpperCase() + mode.slice(1);
+                    }
+                  };
 
-                    return (
-                      <Badge key={m} variant="secondary" className="text-xs">
-                        {getDisplayText(m)}
-                      </Badge>
-                    );
-                  })}
-                </div>
-                <div className="flex flex-wrap gap-1">
-                  {profile.work_modes.filter(m => ["fulltime", "parttime", "contract"].includes(m)).map((m) => {
-                    const getDisplayText = (mode: string) => {
-                      switch (mode) {
-                        case "fulltime": return "Full Time";
-                        case "parttime": return "Part Time";
-                        case "contract": return "Contract";
-                        default: return mode.charAt(0).toUpperCase() + mode.slice(1);
-                      }
-                    };
+                  return (
+                    <Badge key={m} variant="secondary" className="text-xs">
+                      {getDisplayText(m)}
+                    </Badge>
+                  );
+                })}
+                {profile.work_modes.filter(m => ["fulltime", "parttime", "contract"].includes(m)).map((m) => {
+                  const getDisplayText = (mode: string) => {
+                    switch (mode) {
+                      case "fulltime": return "Full Time";
+                      case "parttime": return "Part Time";
+                      case "contract": return "Contract";
+                      default: return mode.charAt(0).toUpperCase() + mode.slice(1);
+                    }
+                  };
 
-                    return (
-                      <Badge key={m} variant="outline" className="text-xs">
-                        {getDisplayText(m)}
-                      </Badge>
-                    );
-                  })}
-                </div>
+                  return (
+                    <Badge key={m} variant="outline" className="text-xs">
+                      {getDisplayText(m)}
+                    </Badge>
+                  );
+                })}
               </div>
             </div>
 
