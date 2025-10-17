@@ -11,7 +11,7 @@ interface ProfileCardProps {
     name: string;
     surname: string;
     job_title: string;
-    work_modes: Array<"onsite" | "hybrid" | "remote">;
+    work_modes: Array<"onsite" | "hybrid" | "remote" | "fulltime" | "parttime" | "contract">;
     city: string | null;
     country: string;
     about_me: string;
@@ -59,12 +59,32 @@ const ProfileCard = ({ profile }: ProfileCardProps) => {
               {profile.job_title}
             </div>
           </div>
-          <div className="flex gap-2">
-            {profile.work_modes.map((m) => (
-              <Badge key={m} variant="secondary">
-                {m === "onsite" ? "Onsite" : m.charAt(0).toUpperCase() + m.slice(1)}
-              </Badge>
-            ))}
+          <div className="flex flex-wrap gap-2">
+            {profile.work_modes.map((m) => {
+              const getDisplayText = (mode: string) => {
+                switch (mode) {
+                  case "onsite": return "Onsite";
+                  case "hybrid": return "Hybrid";
+                  case "remote": return "Remote";
+                  case "fulltime": return "Full Time";
+                  case "parttime": return "Part Time";
+                  case "contract": return "Contract";
+                  default: return mode.charAt(0).toUpperCase() + mode.slice(1);
+                }
+              };
+              
+              const getBadgeVariant = (mode: string) => {
+                if (["onsite", "hybrid", "remote"].includes(mode)) return "secondary";
+                if (["fulltime", "parttime", "contract"].includes(mode)) return "outline";
+                return "secondary";
+              };
+              
+              return (
+                <Badge key={m} variant={getBadgeVariant(m)}>
+                  {getDisplayText(m)}
+                </Badge>
+              );
+            })}
           </div>
         </div>
 

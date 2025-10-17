@@ -167,9 +167,31 @@ const Admin = () => {
                     <td className="py-2 pr-4 whitespace-nowrap">{p.city ? `${p.city}, ${p.country}` : p.country}</td>
                     <td className="py-2 pr-4">
                       <div className="flex flex-wrap gap-1">
-                        {p.work_modes.map(m => (
-                          <Badge key={m} variant="secondary">{m === "onsite" ? "Onsite" : m.charAt(0).toUpperCase()+m.slice(1)}</Badge>
-                        ))}
+                        {p.work_modes.map(m => {
+                          const getDisplayText = (mode: string) => {
+                            switch (mode) {
+                              case "onsite": return "Onsite";
+                              case "hybrid": return "Hybrid";
+                              case "remote": return "Remote";
+                              case "fulltime": return "Full Time";
+                              case "parttime": return "Part Time";
+                              case "contract": return "Contract";
+                              default: return mode.charAt(0).toUpperCase() + mode.slice(1);
+                            }
+                          };
+                          
+                          const getBadgeVariant = (mode: string) => {
+                            if (["onsite", "hybrid", "remote"].includes(mode)) return "secondary";
+                            if (["fulltime", "parttime", "contract"].includes(mode)) return "outline";
+                            return "secondary";
+                          };
+                          
+                          return (
+                            <Badge key={m} variant={getBadgeVariant(m)}>
+                              {getDisplayText(m)}
+                            </Badge>
+                          );
+                        })}
                       </div>
                     </td>
                     <td className="py-2 pr-4 whitespace-nowrap">{daysAgo(p.created_at)}</td>

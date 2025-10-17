@@ -23,7 +23,7 @@ const PostProfile = () => {
     name: "",
     surname: "",
     jobTitle: "",
-    workModes: [] as Array<"onsite" | "hybrid" | "remote">,
+    workModes: [] as Array<"onsite" | "hybrid" | "remote" | "fulltime" | "parttime" | "contract">,
     city: "",
     country: "",
     aboutMe: "",
@@ -261,24 +261,47 @@ const PostProfile = () => {
 
               <div className="space-y-2">
                 <Label>Work Modes</Label>
-                <div className="flex flex-wrap gap-4">
-                  {(["onsite","hybrid","remote"] as const).map(mode => (
-                    <div key={mode} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={`wm-${mode}`}
-                        className="rounded-none"
-                        checked={formData.workModes.includes(mode)}
-                        onCheckedChange={(checked) => {
-                          setFormData(prev => {
-                            const next = new Set(prev.workModes);
-                            if (checked) next.add(mode); else next.delete(mode);
-                            return { ...prev, workModes: Array.from(next) as Array<typeof mode> };
-                          });
-                        }}
-                      />
-                      <Label htmlFor={`wm-${mode}`} className="font-normal cursor-pointer capitalize">{mode}</Label>
-                    </div>
-                  ))}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-3">
+                    <h4 className="text-sm font-medium text-gray-700">Location</h4>
+                    {(["onsite","hybrid","remote"] as const).map(mode => (
+                      <div key={mode} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`wm-${mode}`}
+                          className="rounded-none"
+                          checked={formData.workModes.includes(mode)}
+                          onCheckedChange={(checked) => {
+                            setFormData(prev => {
+                              const next = new Set(prev.workModes);
+                              if (checked) next.add(mode); else next.delete(mode);
+                              return { ...prev, workModes: Array.from(next) as Array<typeof mode> };
+                            });
+                          }}
+                        />
+                        <Label htmlFor={`wm-${mode}`} className="font-normal cursor-pointer capitalize">{mode}</Label>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="space-y-3">
+                    <h4 className="text-sm font-medium text-gray-700">Employment Type</h4>
+                    {(["fulltime","parttime","contract"] as const).map(mode => (
+                      <div key={mode} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`wm-${mode}`}
+                          className="rounded-none"
+                          checked={formData.workModes.includes(mode)}
+                          onCheckedChange={(checked) => {
+                            setFormData(prev => {
+                              const next = new Set(prev.workModes);
+                              if (checked) next.add(mode); else next.delete(mode);
+                              return { ...prev, workModes: Array.from(next) as Array<typeof mode> };
+                            });
+                          }}
+                        />
+                        <Label htmlFor={`wm-${mode}`} className="font-normal cursor-pointer capitalize">{mode === "fulltime" ? "Full Time" : mode === "parttime" ? "Part Time" : "Contract"}</Label>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
 

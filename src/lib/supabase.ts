@@ -14,7 +14,7 @@ export interface Profile {
   name: string
   surname: string
   job_title: string
-  work_modes: string[]
+  work_modes: Array<"onsite" | "hybrid" | "remote" | "fulltime" | "parttime" | "contract">
   city: string
   country: string
   about_me: string
