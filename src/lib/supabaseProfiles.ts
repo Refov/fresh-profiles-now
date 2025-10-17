@@ -56,6 +56,25 @@ export async function saveProfile(profileData: Omit<Profile, 'id' | 'created_at'
     if (!supabase) {
       return { success: false, error: 'Supabase client not initialized' }
     }
+
+    // Additional spam protection: check for suspicious patterns
+    const suspiciousPatterns = [
+      /test/i, /spam/i, /fake/i, /dummy/i, /example/i,
+      /asdf/i, /qwerty/i, /123456/i, /admin/i
+    ];
+    
+    const fullText = `${profileData.name} ${profileData.surname} ${profileData.job_title} ${profileData.about_me}`.toLowerCase();
+    
+    for (const pattern of suspiciousPatterns) {
+      if (pattern.test(fullText)) {
+        return { success: false, error: 'Profile contains suspicious content' };
+      }
+    }
+
+    // Check for minimum content quality
+    if (profileData.about_me.length < 20) {
+      return { success: false, error: 'About me section must be at least 20 characters' };
+    }
     // Normalize LinkedIn URL
     const normalizedLinkedIn = normalizeLinkedInUrl(profileData.linkedin_url)
     

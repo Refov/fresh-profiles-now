@@ -11,13 +11,13 @@ import { ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { saveProfile } from "@/lib/supabaseProfiles";
 import TagInput from "@/components/TagInput";
-import TurnstileWidget from "@/components/TurnstileWidget";
 
 const PostProfile = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [spamCheck, setSpamCheck] = useState("");
+  const [lastSubmission, setLastSubmission] = useState<number | null>(null);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -35,10 +35,22 @@ const PostProfile = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!turnstileToken) {
+    // Rate limiting: prevent multiple submissions within 30 seconds
+    const now = Date.now();
+    if (lastSubmission && (now - lastSubmission) < 30000) {
       toast({
-        title: "Verification required",
-        description: "Please complete the CAPTCHA verification",
+        title: "Please wait",
+        description: "You can only submit one profile every 30 seconds",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Simple spam check: verify the user can read and type
+    if (spamCheck.toLowerCase() !== "job") {
+      toast({
+        title: "Spam protection",
+        description: "Please answer the question correctly",
         variant: "destructive",
       });
       return;
@@ -155,6 +167,7 @@ const PostProfile = () => {
     // LinkedIn URL validation is now handled in saveProfile function
 
     setIsSubmitting(true);
+    setLastSubmission(now);
 
     try {
       const result = await saveProfile({
@@ -326,7 +339,21 @@ const PostProfile = () => {
                 />
               </div>
 
-              <TurnstileWidget onVerify={setTurnstileToken} />
+              <div className="space-y-2">
+                <Label htmlFor="spamCheck">
+                  Spam Protection: What are you looking for? (Answer: job)
+                </Label>
+                <Input
+                  id="spamCheck"
+                  placeholder="Type your answer here"
+                  value={spamCheck}
+                  onChange={(e) => setSpamCheck(e.target.value)}
+                  required
+                />
+                <p className="text-xs text-muted-foreground">
+                  This helps us prevent automated spam submissions
+                </p>
+              </div>
 
               <div className="flex items-start space-x-2">
                 <Checkbox
