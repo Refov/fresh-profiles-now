@@ -158,8 +158,9 @@ export async function getProfiles(filters: ProfileFilters = {}, pagination: Pagi
     
     if (filters.skills && filters.skills.length > 0) {
       // For skills, we need to check if ALL skills are present (AND logic)
+      // Use case-insensitive matching for skills by converting to lowercase
       for (const skill of filters.skills) {
-        query = query.contains('core_skills', [skill])
+        query = query.contains('core_skills', [skill.toLowerCase()])
       }
     }
     
