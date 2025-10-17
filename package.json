@@ -1,7 +1,11 @@
 {
-  "name": "vite_react_shadcn_ts",
+  "name": "fresh-profiles-now",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "description": "Connect job seekers with employers. Post your profile in 60 seconds or browse fresh candidates.",
+  "keywords": ["job search", "hiring", "candidates", "employment", "recruitment"],
+  "author": "Refov",
+  "homepage": "https://refov.com",
   "type": "module",
   "scripts": {
     "dev": "vite",
