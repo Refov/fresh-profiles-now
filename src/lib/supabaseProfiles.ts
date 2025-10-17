@@ -23,7 +23,7 @@ export interface ProfileResult {
 function normalizeLinkedInUrl(url: string): string {
   if (!url) return ''
   
-  // Remove protocol and www
+  // Remove protocol and www for comparison
   let normalized = url.replace(/^https?:\/\/(www\.)?/, '')
   
   // Ensure it starts with linkedin.com
@@ -37,6 +37,19 @@ function normalizeLinkedInUrl(url: string): string {
   return normalized.toLowerCase()
 }
 
+// Ensure LinkedIn URL has proper protocol for opening
+function ensureLinkedInProtocol(url: string): string {
+  if (!url) return ''
+  
+  // If it already has protocol, return as is
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url
+  }
+  
+  // Add https:// if missing
+  return 'https://' + url
+}
+
 // Save a profile to Supabase
 export async function saveProfile(profileData: Omit<Profile, 'id' | 'created_at' | 'expires_at'>): Promise<{ success: boolean; error?: string; profile?: Profile }> {
   try {
@@ -46,31 +59,35 @@ export async function saveProfile(profileData: Omit<Profile, 'id' | 'created_at'
     // Normalize LinkedIn URL
     const normalizedLinkedIn = normalizeLinkedInUrl(profileData.linkedin_url)
     
-    // Check if profile with same LinkedIn URL exists
+    // Check if profile with same LinkedIn URL exists (using normalized version for comparison)
     const { data: existingProfiles, error: checkError } = await supabase
       .from('profiles')
-      .select('id')
-      .eq('linkedin_url', normalizedLinkedIn)
-      .limit(1)
+      .select('id, linkedin_url')
+      .limit(100) // Get more profiles to check normalization
     
     if (checkError) {
       return { success: false, error: `Database error: ${checkError.message}` }
     }
     
+    // Check if any existing profile has the same normalized LinkedIn URL
+    const duplicateProfile = existingProfiles?.find(profile => 
+      normalizeLinkedInUrl(profile.linkedin_url) === normalizedLinkedIn
+    )
+    
     const profileToSave = {
       ...profileData,
-      linkedin_url: normalizedLinkedIn,
+      linkedin_url: ensureLinkedInProtocol(profileData.linkedin_url), // Store with proper protocol
       expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 days from now
     }
     
     let result
     
-    if (existingProfiles && existingProfiles.length > 0) {
+    if (duplicateProfile) {
       // Update existing profile
       const { data, error } = await supabase
         .from('profiles')
         .update(profileToSave)
-        .eq('id', existingProfiles[0].id)
+        .eq('id', duplicateProfile.id)
         .select()
         .single()
       
