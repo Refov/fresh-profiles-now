@@ -101,6 +101,19 @@ const PostProfile = () => {
       return;
     }
 
+    // Check if at least one Employment Type is selected
+    const employmentTypes = ["fulltime", "parttime", "contract"];
+    const hasEmploymentType = formData.workModes.some(mode => employmentTypes.includes(mode));
+    
+    if (!hasEmploymentType) {
+      toast({
+        title: "Employment Type required",
+        description: "Please select at least one employment type (Full Time, Part Time, or Contract)",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (!formData.city.trim()) {
       toast({
         title: "City required",
