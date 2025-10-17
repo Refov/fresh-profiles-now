@@ -31,3 +31,9 @@ The site is deployed on hostcreators.sk with automatic deployment via GitHub Act
 ## Domain
 
 Live at: [https://refov.com](https://refov.com)
+
+## Latest Update
+- SEO optimized
+- Lovable dependencies removed
+- Mobile responsive
+- Production ready
