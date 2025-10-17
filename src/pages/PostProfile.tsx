@@ -9,7 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { addProfile } from "@/lib/localProfiles";
+import { saveProfile } from "@/lib/supabaseProfiles";
 import TagInput from "@/components/TagInput";
 import TurnstileWidget from "@/components/TurnstileWidget";
 
@@ -152,44 +152,36 @@ const PostProfile = () => {
       return;
     }
 
-    // Check duplicate by LinkedIn
-    try {
-      const existing = JSON.parse(localStorage.getItem("profiles") || "[]") as Array<{ linkedin_url: string }>;
-      const norm = (u: string) => {
-        const x = u.trim().toLowerCase();
-        return x.endsWith("/") ? x.slice(0, -1) : x;
-      };
-      if (existing.some(p => norm(p.linkedin_url) === norm(formData.linkedinUrl))) {
-        toast({
-          title: "Duplicate LinkedIn",
-          description: "A profile with this LinkedIn already exists",
-          variant: "destructive",
-        });
-        return;
-      }
-    } catch {}
+    // LinkedIn URL validation is now handled in saveProfile function
 
     setIsSubmitting(true);
 
     try {
-      addProfile({
+      const result = await saveProfile({
         name: formData.name,
         surname: formData.surname,
         job_title: formData.jobTitle,
         work_modes: formData.workModes,
-        city: formData.city || null,
+        city: formData.city,
         country: formData.country,
         about_me: formData.aboutMe,
         linkedin_url: formData.linkedinUrl,
         core_skills: formData.coreSkills,
       });
 
-      toast({
-        title: "Profile posted!",
-        description: "Stored locally for 30 days",
-      });
-
-      navigate("/candidates");
+      if (result.success) {
+        toast({
+          title: "Profile posted!",
+          description: "Your profile is now visible to recruiters for 30 days",
+        });
+        navigate("/candidates");
+      } else {
+        toast({
+          title: "Failed to post profile",
+          description: result.error || "Please try again",
+          variant: "destructive",
+        });
+      }
     } catch (error: any) {
       toast({
         title: "Failed to post profile",

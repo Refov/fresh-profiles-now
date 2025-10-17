@@ -8,11 +8,9 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { ArrowLeft, Search, MapPin, Briefcase, ExternalLink } from "lucide-react";
-import { getAllProfiles, filterProfiles, LocalProfile } from "@/lib/localProfiles";
-import ProfileCard from "@/components/ProfileCard";
+import { getProfiles, ProfileFilters, ProfileResult } from "@/lib/supabaseProfiles";
 import { useToast } from "@/hooks/use-toast";
-
-type Profile = LocalProfile;
+import { Profile } from "@/lib/supabase";
 
 const Candidates = () => {
   const navigate = useNavigate();
@@ -25,9 +23,10 @@ const Candidates = () => {
     jobTitle: "",
     skills: [] as string[],
   });
-  const [page, setPage] = useState(0);
+  const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [revealedIds, setRevealedIds] = useState<Set<string>>(new Set());
+  const [total, setTotal] = useState(0);
   const ITEMS_PER_PAGE = 20;
 
   const getDaysAgo = (iso: string) => {
@@ -39,28 +38,30 @@ const Candidates = () => {
 
   const fetchProfiles = async (resetPage = false) => {
     setLoading(true);
-    const currentPage = resetPage ? 0 : page;
+    const currentPage = resetPage ? 1 : page;
 
     try {
-      const all = getAllProfiles();
-      const filtered = filterProfiles(all, {
-        city: filters.city,
-        country: filters.country,
-        jobTitle: filters.jobTitle,
-        skills: filters.skills,
+      const profileFilters: ProfileFilters = {
+        city: filters.city || undefined,
+        country: filters.country || undefined,
+        skills: filters.skills.length > 0 ? filters.skills : undefined,
+        search: filters.jobTitle || undefined,
+      };
+
+      const result = await getProfiles(profileFilters, {
+        page: currentPage,
+        limit: ITEMS_PER_PAGE,
       });
-      const start = currentPage * ITEMS_PER_PAGE;
-      const end = start + ITEMS_PER_PAGE;
-      const pageItems = filtered.slice(start, end);
 
       if (resetPage) {
-        setProfiles(pageItems);
-        setPage(0);
+        setProfiles(result.profiles);
+        setPage(1);
       } else {
-        setProfiles((prev) => [...prev, ...pageItems]);
+        setProfiles((prev) => [...prev, ...result.profiles]);
       }
 
-      setHasMore(end < filtered.length);
+      setHasMore(result.hasMore);
+      setTotal(result.total);
     } catch (error: any) {
       toast({
         title: "Error loading profiles",
