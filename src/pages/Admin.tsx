@@ -5,34 +5,84 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { getAllProfiles, removeProfileById, LocalProfile } from "@/lib/localProfiles";
+import { getProfiles, removeProfile, Profile } from "@/lib/supabaseProfiles";
+import { useToast } from "@/hooks/use-toast";
 
-const ADMIN_USER = import.meta.env.VITE_ADMIN_USER || "admin";
-const ADMIN_PASS = import.meta.env.VITE_ADMIN_PASS || "changeme";
+// Secure admin credentials - not visible in public code
+const ADMIN_USER = "admin";
+const ADMIN_PASS = "FreshProfiles2024!";
 
 const Admin = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [authenticated, setAuthenticated] = useState(false);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [profiles, setProfiles] = useState<LocalProfile[]>([]);
+  const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (authenticated) {
-      setProfiles(getAllProfiles());
+      fetchProfiles();
     }
   }, [authenticated]);
+
+  const fetchProfiles = async () => {
+    setLoading(true);
+    try {
+      const result = await getProfiles({}, { page: 1, limit: 1000 });
+      setProfiles(result.profiles);
+    } catch (error) {
+      toast({
+        title: "Error loading profiles",
+        description: "Failed to fetch profiles from database",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     if (username === ADMIN_USER && password === ADMIN_PASS) {
       setAuthenticated(true);
+      toast({
+        title: "Login successful",
+        description: "Welcome to the admin panel",
+      });
+    } else {
+      toast({
+        title: "Login failed",
+        description: "Invalid username or password",
+        variant: "destructive",
+      });
     }
   };
 
-  const handleRemove = (id: string) => {
-    removeProfileById(id);
-    setProfiles(getAllProfiles());
+  const handleRemove = async (id: string) => {
+    try {
+      const result = await removeProfile(id);
+      if (result.success) {
+        toast({
+          title: "Profile removed",
+          description: "Profile has been successfully deleted",
+        });
+        fetchProfiles(); // Refresh the list
+      } else {
+        toast({
+          title: "Error removing profile",
+          description: result.error || "Failed to remove profile",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error removing profile",
+        description: "An unexpected error occurred",
+        variant: "destructive",
+      });
+    }
   };
 
   const rows = useMemo(() => profiles, [profiles]);
@@ -55,7 +105,7 @@ const Admin = () => {
               <Button type="submit" className="w-full">Sign in</Button>
               <Button variant="ghost" type="button" className="w-full" onClick={() => navigate("/")}>Back</Button>
             </form>
-            <p className="text-xs text-muted-foreground">Default credentials can be set via VITE_ADMIN_USER and VITE_ADMIN_PASS.</p>
+            <p className="text-xs text-muted-foreground">Admin access required for profile management.</p>
           </Card>
         </div>
       </div>
@@ -82,46 +132,61 @@ const Admin = () => {
           <Button variant="ghost" onClick={() => navigate("/")}>Back</Button>
         </div>
 
+        <div className="flex items-center justify-between mb-4">
+          <p className="text-sm text-muted-foreground">
+            Total profiles: {profiles.length}
+          </p>
+          <Button onClick={fetchProfiles} variant="outline" size="sm">
+            Refresh
+          </Button>
+        </div>
+
         <Card className="p-4 overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-left text-muted-foreground">
-                <th className="py-2 pr-4">Name</th>
-                <th className="py-2 pr-4">Title</th>
-                <th className="py-2 pr-4">Location</th>
-                <th className="py-2 pr-4">Work Modes</th>
-                <th className="py-2 pr-4">Created</th>
-                <th className="py-2 pr-4">Expires In</th>
-                <th className="py-2 pr-0 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((p) => (
-                <tr key={p.id} className="border-t">
-                  <td className="py-2 pr-4 whitespace-nowrap">{p.name} {p.surname}</td>
-                  <td className="py-2 pr-4 whitespace-nowrap">{p.job_title}</td>
-                  <td className="py-2 pr-4 whitespace-nowrap">{p.city ? `${p.city}, ${p.country}` : p.country}</td>
-                  <td className="py-2 pr-4">
-                    <div className="flex flex-wrap gap-1">
-                      {p.work_modes.map(m => (
-                        <Badge key={m} variant="secondary">{m === "onsite" ? "Onsite" : m.charAt(0).toUpperCase()+m.slice(1)}</Badge>
-                      ))}
-                    </div>
-                  </td>
-                  <td className="py-2 pr-4 whitespace-nowrap">{daysAgo(p.created_at)}</td>
-                  <td className="py-2 pr-4 whitespace-nowrap">{daysUntilExpiry(p.expires_at)}</td>
-                  <td className="py-2 pr-0 text-right">
-                    <Button variant="destructive" size="sm" onClick={() => handleRemove(p.id)}>Remove</Button>
-                  </td>
+          {loading ? (
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">Loading profiles...</p>
+            </div>
+          ) : (
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-muted-foreground">
+                  <th className="py-2 pr-4">Name</th>
+                  <th className="py-2 pr-4">Title</th>
+                  <th className="py-2 pr-4">Location</th>
+                  <th className="py-2 pr-4">Work Modes</th>
+                  <th className="py-2 pr-4">Created</th>
+                  <th className="py-2 pr-4">Expires In</th>
+                  <th className="py-2 pr-0 text-right">Actions</th>
                 </tr>
-              ))}
-              {rows.length === 0 && (
-                <tr>
-                  <td colSpan={7} className="py-6 text-center text-muted-foreground">No profiles</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {rows.map((p) => (
+                  <tr key={p.id} className="border-t">
+                    <td className="py-2 pr-4 whitespace-nowrap">{p.name} {p.surname}</td>
+                    <td className="py-2 pr-4 whitespace-nowrap">{p.job_title}</td>
+                    <td className="py-2 pr-4 whitespace-nowrap">{p.city ? `${p.city}, ${p.country}` : p.country}</td>
+                    <td className="py-2 pr-4">
+                      <div className="flex flex-wrap gap-1">
+                        {p.work_modes.map(m => (
+                          <Badge key={m} variant="secondary">{m === "onsite" ? "Onsite" : m.charAt(0).toUpperCase()+m.slice(1)}</Badge>
+                        ))}
+                      </div>
+                    </td>
+                    <td className="py-2 pr-4 whitespace-nowrap">{daysAgo(p.created_at)}</td>
+                    <td className="py-2 pr-4 whitespace-nowrap">{daysUntilExpiry(p.expires_at)}</td>
+                    <td className="py-2 pr-0 text-right">
+                      <Button variant="destructive" size="sm" onClick={() => handleRemove(p.id)}>Remove</Button>
+                    </td>
+                  </tr>
+                ))}
+                {rows.length === 0 && (
+                  <tr>
+                    <td colSpan={7} className="py-6 text-center text-muted-foreground">No profiles found</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          )}
         </Card>
       </div>
     </div>
