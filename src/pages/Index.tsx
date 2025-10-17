@@ -10,10 +10,12 @@ const Index = () => {
       <main className="container mx-auto px-4 py-16 md:py-24">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
-            Fresh candidates only
+            Find Your Next Job or Hire
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground mb-12 max-w-2xl mx-auto">
-            Updated every 30 days. No accounts. Post in 60 seconds.
+            Job Seekers: Post your profile in 60 seconds<br />
+            Recruiters: Browse fresh, active candidates<br />
+            <span className="text-base text-muted-foreground/80">All profiles expire every 30 days - no outdated listings</span>
           </p>
 
           <div className="grid md:grid-cols-2 gap-6 max-w-2xl mx-auto">
@@ -24,8 +26,8 @@ const Index = () => {
             >
               <Briefcase className="w-8 h-8" />
               <div>
-                <div className="text-xl font-semibold">Job Seeker</div>
-                <div className="text-sm opacity-90 font-normal">Post your profile</div>
+                <div className="text-xl font-semibold">Post Your Profile</div>
+                <div className="text-sm opacity-90 font-normal">Get discovered by recruiters</div>
               </div>
             </Button>
 
@@ -37,8 +39,8 @@ const Index = () => {
             >
               <Users className="w-8 h-8" />
               <div>
-                <div className="text-xl font-semibold">Recruiter</div>
-                <div className="text-sm text-muted-foreground font-normal">Browse candidates</div>
+                <div className="text-xl font-semibold">Find Candidates</div>
+                <div className="text-sm text-muted-foreground font-normal">Browse fresh talent</div>
               </div>
             </Button>
           </div>
