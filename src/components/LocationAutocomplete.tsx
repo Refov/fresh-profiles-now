@@ -25,6 +25,7 @@ const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
   const inputRef = useRef<HTMLInputElement>(null);
   const autocompleteRef = useRef<any>(null);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
 
   useEffect(() => {
     // Load Google Places API script
@@ -53,16 +54,37 @@ const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
   const initAutocomplete = () => {
     if (!window.google || !inputRef.current) return;
 
-    autocompleteRef.current = new window.google.maps.places.Autocomplete(inputRef.current, {
+    // Only initialize autocomplete when user stops typing
+    const input = inputRef.current;
+    
+    const handleInput = (e: Event) => {
+      setIsTyping(true);
+      const target = e.target as HTMLInputElement;
+      onChange(target.value);
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        // Don't trigger autocomplete on Enter
+        return;
+      }
+    };
+
+    input.addEventListener('input', handleInput);
+    input.addEventListener('keydown', handleKeyDown);
+
+    // Initialize autocomplete with minimal configuration
+    autocompleteRef.current = new window.google.maps.places.Autocomplete(input, {
       types: ['(cities)'],
-      fields: ['address_components', 'formatted_address', 'geometry', 'name']
+      fields: ['address_components', 'formatted_address', 'geometry', 'name'],
+      componentRestrictions: { country: [] } // Allow all countries
     });
 
     autocompleteRef.current.addListener('place_changed', () => {
       const place = autocompleteRef.current.getPlace();
       
       if (!place.geometry) {
-        console.log("No details available for input: '" + place.name + "'");
         return;
       }
 
@@ -78,27 +100,31 @@ const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
         }
       }
 
-      // If no city found, use the formatted address
       if (!city) {
         city = place.formatted_address.split(',')[0];
       }
 
-      // Update the input value
       onChange(place.formatted_address);
-      
-      // Call the callback with parsed city and country
       onPlaceSelect(city, country);
+      setIsTyping(false);
     });
+
+    return () => {
+      input.removeEventListener('input', handleInput);
+      input.removeEventListener('keydown', handleKeyDown);
+    };
   };
 
   return (
     <Input
       ref={inputRef}
       value={value}
-      onChange={(e) => onChange(e.target.value)}
+      onChange={(e) => {
+        setIsTyping(true);
+        onChange(e.target.value);
+      }}
       placeholder={placeholder}
       className={className}
-      disabled={!isLoaded}
     />
   );
 };
