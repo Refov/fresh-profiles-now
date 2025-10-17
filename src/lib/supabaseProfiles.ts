@@ -40,6 +40,9 @@ function normalizeLinkedInUrl(url: string): string {
 // Save a profile to Supabase
 export async function saveProfile(profileData: Omit<Profile, 'id' | 'created_at' | 'expires_at'>): Promise<{ success: boolean; error?: string; profile?: Profile }> {
   try {
+    if (!supabase) {
+      return { success: false, error: 'Supabase client not initialized' }
+    }
     // Normalize LinkedIn URL
     const normalizedLinkedIn = normalizeLinkedInUrl(profileData.linkedin_url)
     
@@ -96,6 +99,9 @@ export async function saveProfile(profileData: Omit<Profile, 'id' | 'created_at'
 // Get profiles with filtering and pagination
 export async function getProfiles(filters: ProfileFilters = {}, pagination: PaginationOptions = { page: 1, limit: 10 }): Promise<ProfileResult> {
   try {
+    if (!supabase) {
+      return { profiles: [], total: 0, hasMore: false }
+    }
     let query = supabase
       .from('profiles')
       .select('*', { count: 'exact' })
