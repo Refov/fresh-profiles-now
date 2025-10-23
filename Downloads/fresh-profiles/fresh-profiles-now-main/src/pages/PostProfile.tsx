@@ -371,10 +371,16 @@ const PostProfile = () => {
                 <Label>Core Skills (max 8)</Label>
                 <TagInput
                   value={formData.coreSkills}
-                  onChange={(skills) => setFormData({ ...formData, coreSkills: skills })}
+                  onChange={(skills) => {
+                    console.log('PARENT onChange coreSkills:', skills);
+                    setFormData({ ...formData, coreSkills: skills });
+                  }}
                   maxTags={8}
                   placeholder="Type a skill and press Enter"
                 />
+                <div style={{ fontFamily: 'monospace', fontSize: 12, whiteSpace: 'pre-wrap', background: '#f4f4f4', padding: 8, marginTop: 6 }}>
+                  Current skills array: {JSON.stringify(formData.coreSkills, null, 2)}
+                </div>
               </div>
 
               <div className="space-y-2">
