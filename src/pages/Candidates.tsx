@@ -14,7 +14,23 @@ import { Profile } from "@/lib/supabase";
 import { SEO } from "@/components/SEO";
 
 const Candidates = () => {
-  // AI-optimized schema for job posting aggregate
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filters, setFilters] = useState({
+    city: "",
+    country: "",
+    jobTitle: "",
+    skills: [] as string[],
+  });
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [revealedIds, setRevealedIds] = useState<Set<string>>(new Set());
+  const [total, setTotal] = useState(0);
+  const ITEMS_PER_PAGE = 20;
+
+  // AI-optimized schema for job posting aggregate (built dynamically)
   const schemaData = {
     "@context": "https://schema.org",
     "@type": "ItemList",
@@ -35,21 +51,6 @@ const Candidates = () => {
       "description": profile.about_me?.substring(0, 200)
     }))
   };
-  const navigate = useNavigate();
-  const { toast } = useToast();
-  const [profiles, setProfiles] = useState<Profile[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [filters, setFilters] = useState({
-    city: "",
-    country: "",
-    jobTitle: "",
-    skills: [] as string[],
-  });
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
-  const [revealedIds, setRevealedIds] = useState<Set<string>>(new Set());
-  const [total, setTotal] = useState(0);
-  const ITEMS_PER_PAGE = 20;
 
   const getDaysAgo = (iso: string) => {
     const created = new Date(iso).getTime();
