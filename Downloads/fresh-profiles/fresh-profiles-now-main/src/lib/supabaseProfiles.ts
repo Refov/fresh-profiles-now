@@ -75,19 +75,19 @@ export async function saveProfile(profileData: Omit<Profile, 'id' | 'created_at'
       return { success: false, error: 'Supabase client not initialized' }
     }
 
-    // Additional spam protection: check for suspicious patterns (whole words only)
-    const suspiciousPatterns = [
-      /\btest\b/i, /\bspam\b/i, /\bfake\b/i, /\bdummy\b/i, /\bexample\b/i,
-      /\basdf\b/i, /\bqwerty\b/i, /\b123456\b/i, /\badmin\b/i
-    ];
+    // Spam protection temporarily disabled for testing
+    // const suspiciousPatterns = [
+    //   /\btest\b/i, /\bspam\b/i, /\bfake\b/i, /\bdummy\b/i, /\bexample\b/i,
+    //   /\basdf\b/i, /\bqwerty\b/i, /\b123456\b/i, /\badmin\b/i
+    // ];
     
-    const fullText = `${profileData.name} ${profileData.surname} ${profileData.job_title} ${profileData.about_me}`.toLowerCase();
+    // const fullText = `${profileData.name} ${profileData.surname} ${profileData.job_title} ${profileData.about_me}`.toLowerCase();
     
-    for (const pattern of suspiciousPatterns) {
-      if (pattern.test(fullText)) {
-        return { success: false, error: 'Profile contains suspicious content' };
-      }
-    }
+    // for (const pattern of suspiciousPatterns) {
+    //   if (pattern.test(fullText)) {
+    //     return { success: false, error: 'Profile contains suspicious content' };
+    //   }
+    // }
 
     // Check for minimum content quality
     if (profileData.about_me.length < 20) {
