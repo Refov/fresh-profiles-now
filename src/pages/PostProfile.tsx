@@ -183,6 +183,7 @@ const PostProfile = () => {
     setLastSubmission(now);
 
     try {
+      console.log('PostProfile: About to call saveProfile - NO spam filter (v3.0)');
       const result = await saveProfile({
         name: formData.name,
         surname: formData.surname,
@@ -194,6 +195,7 @@ const PostProfile = () => {
         linkedin_url: formData.linkedinUrl,
         core_skills: formData.coreSkills,
       });
+      console.log('PostProfile: saveProfile result:', result);
 
       if (result.success) {
         toast({
