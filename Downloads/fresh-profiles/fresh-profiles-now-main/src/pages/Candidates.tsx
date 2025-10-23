@@ -58,16 +58,17 @@ const Candidates = () => {
       let filteredProfiles = result.profiles;
       // Client-side filtering by skills (if skills provided)
       if (filters.skills.length > 0) {
-        // only consider nonempty skill queries after trim
-        const userSkills = filters.skills.map(s => s.trim().toLowerCase()).filter(Boolean);
+        // Preprocess: remove spaces, punctuation, lowercase, and filter for nonempty skill queries
+        const clean = (str: string) => str.replace(/\s+/g, '').replace(/\W/g, '').toLowerCase();
+        const userSkillQueries = filters.skills.map(s => clean(s)).filter(Boolean);
         filteredProfiles = filteredProfiles.filter(profile => {
           if (!profile.core_skills) return false;
-          // Each query word must be present in ANY core_skill by partial match, case-insensitive
-          return userSkills.every(skillQuery =>
-            profile.core_skills.some(coreSkill =>
-              coreSkill.toLowerCase().includes(skillQuery)
-            )
-          );
+          // Flatten profile skills
+          return profile.core_skills.some(coreSkill => {
+            const processedSkill = clean(coreSkill);
+            // Return true if any user query is a substring
+            return userSkillQueries.some(q => processedSkill.includes(q));
+          });
         });
       }
       if (resetPage) {
@@ -118,6 +119,14 @@ const Candidates = () => {
     window.open(linkedinUrl, "_blank");
   };
 
+  // Add helper for trimming before setting filters
+  const handleFilterInputChange = (key: keyof typeof filters) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFilters({ ...filters, [key]: e.target.value });
+  };
+  const handleFilterInputBlur = (key: keyof typeof filters) => (e: React.FocusEvent<HTMLInputElement>) => {
+    setFilters({ ...filters, [key]: e.target.value.trim() });
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary py-8 px-4">
       <div className="container max-w-6xl mx-auto">
@@ -140,7 +149,8 @@ const Candidates = () => {
                   id="city"
                   placeholder="Filter by city"
                   value={filters.city}
-                  onChange={(e) => setFilters({ ...filters, city: e.target.value })}
+                  onChange={handleFilterInputChange('city')}
+                  onBlur={handleFilterInputBlur('city')}
                 />
               </div>
               <div className="space-y-2">
@@ -149,7 +159,8 @@ const Candidates = () => {
                   id="country"
                   placeholder="Filter by country"
                   value={filters.country}
-                  onChange={(e) => setFilters({ ...filters, country: e.target.value })}
+                  onChange={handleFilterInputChange('country')}
+                  onBlur={handleFilterInputBlur('country')}
                 />
               </div>
               <div className="space-y-2">
@@ -158,7 +169,8 @@ const Candidates = () => {
                   id="jobTitle"
                   placeholder="Filter by job title"
                   value={filters.jobTitle}
-                  onChange={(e) => setFilters({ ...filters, jobTitle: e.target.value })}
+                  onChange={handleFilterInputChange('jobTitle')}
+                  onBlur={handleFilterInputBlur('jobTitle')}
                 />
               </div>
               <div className="space-y-2">
