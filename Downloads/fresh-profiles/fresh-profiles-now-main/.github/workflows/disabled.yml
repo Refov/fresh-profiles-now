@@ -1,0 +1,13 @@
+name: Disabled - hostcreators.sk handles deployment
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  disabled:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Deployment handled by hostcreators.sk
+      run: echo "Deployment is handled automatically by hostcreators.sk - no action needed"
