@@ -40,12 +40,18 @@ const Candidates = () => {
     setLoading(true);
     const currentPage = resetPage ? 1 : page;
 
+    // Always trim and lowercase input filters
+    const trimmedCity = filters.city.trim();
+    const trimmedCountry = filters.country.trim();
+    const trimmedTitle = filters.jobTitle.trim();
+    const trimmedSkills = filters.skills.map(s => s.trim().toLowerCase());
+
     try {
       const profileFilters: ProfileFilters = {
-        city: filters.city || undefined,
-        country: filters.country || undefined,
-        skills: filters.skills.length > 0 ? filters.skills : undefined,
-        search: filters.jobTitle || undefined,
+        city: trimmedCity || undefined,
+        country: trimmedCountry || undefined,
+        skills: trimmedSkills.length > 0 ? trimmedSkills : undefined,
+        search: trimmedTitle || undefined,
       };
 
       const result = await getProfiles(profileFilters, {
@@ -53,11 +59,23 @@ const Candidates = () => {
         limit: ITEMS_PER_PAGE,
       });
 
+      let filteredProfiles = result.profiles;
+      // Extra robust filtering for skills: case-insensitive, trim, substring
+      if (trimmedSkills.length > 0) {
+        filteredProfiles = filteredProfiles.filter(profile => {
+          // For each candidate, true if any filter skill found in any profile skill (case-insensitive, trim)
+          return profile.core_skills && profile.core_skills.some(userSkill => {
+            const skillVal = userSkill.trim().toLowerCase();
+            return trimmedSkills.some(filterSkill => skillVal.includes(filterSkill));
+          });
+        });
+      }
+
       if (resetPage) {
-        setProfiles(result.profiles);
+        setProfiles(filteredProfiles);
         setPage(1);
       } else {
-        setProfiles((prev) => [...prev, ...result.profiles]);
+        setProfiles(prev => [...prev, ...filteredProfiles]);
       }
 
       setHasMore(result.hasMore);
