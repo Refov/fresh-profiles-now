@@ -75,10 +75,10 @@ export async function saveProfile(profileData: Omit<Profile, 'id' | 'created_at'
       return { success: false, error: 'Supabase client not initialized' }
     }
 
-    // Additional spam protection: check for suspicious patterns
+    // Additional spam protection: check for suspicious patterns (whole words only)
     const suspiciousPatterns = [
-      /test/i, /spam/i, /fake/i, /dummy/i, /example/i,
-      /asdf/i, /qwerty/i, /123456/i, /admin/i
+      /\btest\b/i, /\bspam\b/i, /\bfake\b/i, /\bdummy\b/i, /\bexample\b/i,
+      /\basdf\b/i, /\bqwerty\b/i, /\b123456\b/i, /\badmin\b/i
     ];
     
     const fullText = `${profileData.name} ${profileData.surname} ${profileData.job_title} ${profileData.about_me}`.toLowerCase();
