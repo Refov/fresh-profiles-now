@@ -39,44 +39,27 @@ const Candidates = () => {
   const fetchProfiles = async (resetPage = false) => {
     setLoading(true);
     const currentPage = resetPage ? 1 : page;
-    // New: trim and lowercase the filters
-    const trimmedCity = filters.city.trim();
-    const trimmedCountry = filters.country.trim();
-    const trimmedTitle = filters.jobTitle.trim();
+
     try {
       const profileFilters: ProfileFilters = {
-        city: trimmedCity || undefined,
-        country: trimmedCountry || undefined,
-        // Remove skills from backend for client filtering
-        // skills: filters.skills.length > 0 ? filters.skills : undefined,
-        search: trimmedTitle || undefined,
+        city: filters.city || undefined,
+        country: filters.country || undefined,
+        skills: filters.skills.length > 0 ? filters.skills : undefined,
+        search: filters.jobTitle || undefined,
       };
+
       const result = await getProfiles(profileFilters, {
         page: currentPage,
         limit: ITEMS_PER_PAGE,
       });
-      let filteredProfiles = result.profiles;
-      // Client-side filtering by skills (if skills provided)
-      if (filters.skills.length > 0) {
-        // Preprocess: remove spaces, punctuation, lowercase, and filter for nonempty skill queries
-        const clean = (str: string) => str.replace(/\s+/g, '').replace(/\W/g, '').toLowerCase();
-        const userSkillQueries = filters.skills.map(s => clean(s)).filter(Boolean);
-        filteredProfiles = filteredProfiles.filter(profile => {
-          if (!profile.core_skills) return false;
-          // Flatten profile skills
-          return profile.core_skills.some(coreSkill => {
-            const processedSkill = clean(coreSkill);
-            // Return true if any user query is a substring
-            return userSkillQueries.some(q => processedSkill.includes(q));
-          });
-        });
-      }
+
       if (resetPage) {
-        setProfiles(filteredProfiles);
+        setProfiles(result.profiles);
         setPage(1);
       } else {
-        setProfiles((prev) => [...prev, ...filteredProfiles]);
+        setProfiles((prev) => [...prev, ...result.profiles]);
       }
+
       setHasMore(result.hasMore);
       setTotal(result.total);
     } catch (error: any) {
@@ -119,14 +102,6 @@ const Candidates = () => {
     window.open(linkedinUrl, "_blank");
   };
 
-  // Add helper for trimming before setting filters
-  const handleFilterInputChange = (key: keyof typeof filters) => (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFilters({ ...filters, [key]: e.target.value });
-  };
-  const handleFilterInputBlur = (key: keyof typeof filters) => (e: React.FocusEvent<HTMLInputElement>) => {
-    setFilters({ ...filters, [key]: e.target.value.trim() });
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary py-8 px-4">
       <div className="container max-w-6xl mx-auto">
@@ -149,8 +124,7 @@ const Candidates = () => {
                   id="city"
                   placeholder="Filter by city"
                   value={filters.city}
-                  onChange={handleFilterInputChange('city')}
-                  onBlur={handleFilterInputBlur('city')}
+                  onChange={(e) => setFilters({ ...filters, city: e.target.value })}
                 />
               </div>
               <div className="space-y-2">
@@ -159,8 +133,7 @@ const Candidates = () => {
                   id="country"
                   placeholder="Filter by country"
                   value={filters.country}
-                  onChange={handleFilterInputChange('country')}
-                  onBlur={handleFilterInputBlur('country')}
+                  onChange={(e) => setFilters({ ...filters, country: e.target.value })}
                 />
               </div>
               <div className="space-y-2">
@@ -169,8 +142,7 @@ const Candidates = () => {
                   id="jobTitle"
                   placeholder="Filter by job title"
                   value={filters.jobTitle}
-                  onChange={handleFilterInputChange('jobTitle')}
-                  onBlur={handleFilterInputBlur('jobTitle')}
+                  onChange={(e) => setFilters({ ...filters, jobTitle: e.target.value })}
                 />
               </div>
               <div className="space-y-2">
