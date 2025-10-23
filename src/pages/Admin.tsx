@@ -8,10 +8,6 @@ import { Badge } from "@/components/ui/badge";
 import { getProfiles, removeProfile, Profile } from "@/lib/supabaseProfiles";
 import { useToast } from "@/hooks/use-toast";
 
-// Secure admin credentials - not visible in public code
-const ADMIN_USER = "admin";
-const ADMIN_PASS = "FreshProfiles2024!";
-
 const Admin = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -20,6 +16,7 @@ const Admin = () => {
   const [password, setPassword] = useState("");
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loggingIn, setLoggingIn] = useState(false);
 
   useEffect(() => {
     if (authenticated) {
@@ -43,20 +40,43 @@ const Admin = () => {
     }
   };
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (username === ADMIN_USER && password === ADMIN_PASS) {
-      setAuthenticated(true);
-      toast({
-        title: "Login successful",
-        description: "Welcome to the admin panel",
+    setLoggingIn(true);
+
+    try {
+      const response = await fetch('https://icvvtqwiqudvvrlcsjyu.supabase.co/functions/v1/admin-login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password }),
       });
-    } else {
+
+      const data = await response.json();
+
+      if (data.success) {
+        setAuthenticated(true);
+        sessionStorage.setItem('adminToken', data.token);
+        toast({
+          title: "Login successful",
+          description: "Welcome to the admin panel",
+        });
+      } else {
+        toast({
+          title: "Login failed",
+          description: "Invalid username or password",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
       toast({
-        title: "Login failed",
-        description: "Invalid username or password",
+        title: "Error",
+        description: "Failed to connect to server",
         variant: "destructive",
       });
+    } finally {
+      setLoggingIn(false);
     }
   };
 
@@ -102,7 +122,9 @@ const Admin = () => {
                 <Label htmlFor="pass">Password</Label>
                 <Input id="pass" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
               </div>
-              <Button type="submit" className="w-full">Sign in</Button>
+              <Button type="submit" className="w-full" disabled={loggingIn}>
+                {loggingIn ? "Signing in..." : "Sign in"}
+              </Button>
               <Button variant="ghost" type="button" className="w-full" onClick={() => navigate("/")}>Back</Button>
             </form>
             <p className="text-xs text-muted-foreground">Admin access required for profile management.</p>

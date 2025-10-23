@@ -75,9 +75,6 @@ export async function saveProfile(profileData: Omit<Profile, 'id' | 'created_at'
       return { success: false, error: 'Supabase client not initialized' }
     }
 
-    // Spam protection DISABLED - Version 2.0
-    console.log('saveProfile called - spam filter is OFF (v2.0)');
-
     // Check for minimum content quality
     if (profileData.about_me.length < 20) {
       return { success: false, error: 'About me section must be at least 20 characters' };
