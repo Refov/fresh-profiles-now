@@ -14,61 +14,36 @@ interface TagInputProps {
 const TagInput = ({ value, onChange, maxTags = 8, placeholder = "Type and press Enter" }: TagInputProps) => {
   const [inputValue, setInputValue] = useState("");
 
-  // Helper to split input on comma and return trimmed, unique tags (not in value, respecting maxTags)
-  const getNewTags = (input: string) => {
-    console.log("TagInput: Original input string to getNewTags:", input);
-    const splitAndTrimmed = input
-      .split(",")
-      .map(tag => tag.trim());
-    console.log("TagInput: After split and trim:", splitAndTrimmed);
-    const filtered = splitAndTrimmed.filter(tag => tag && !value.includes(tag));
-    console.log("TagInput: After filtering (non-empty & unique):", filtered);
-    return filtered;
-  };
-
-  const addTags = (rawInput: string) => {
-    console.log("TagInput: addTags called with rawInput:", rawInput);
-    if (!rawInput.trim()) {
-      console.log("TagInput: addTags - Input is empty or just whitespace, returning.");
-      return;
-    }
-    if (value.length >= maxTags) {
-      console.log("TagInput: addTags - Max tags reached, returning.");
-      return;
-    }
-    const newTags = getNewTags(rawInput);
-    console.log("TagInput: addTags - newTags from getNewTags:", newTags);
-    const limitedTags = [...value];
-    newTags.forEach(tag => {
-      if (limitedTags.length < maxTags && !limitedTags.includes(tag)) {
-        limitedTags.push(tag);
-      }
-    });
-    console.log("TagInput: addTags - Final limitedTags array:", limitedTags);
-    if (newTags.length > 0) {
-      onChange(limitedTags);
+  const addTags = (input: string) => {
+    if (!input.trim()) return;
+    
+    // Split by comma, trim each part, filter out empty and duplicates
+    const newTags = input
+      .split(',')
+      .map(tag => tag.trim())
+      .filter(tag => tag && !value.includes(tag));
+    
+    // Add new tags up to the max limit
+    const tagsToAdd = newTags.slice(0, maxTags - value.length);
+    
+    if (tagsToAdd.length > 0) {
+      onChange([...value, ...tagsToAdd]);
       setInputValue("");
-      console.log("TagInput: addTags - Tags successfully updated and input cleared.");
-    } else {
-      console.log("TagInput: addTags - No new tags to add.");
     }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    console.log("TagInput: handleKeyDown triggered for key:", e.key);
-    if (e.key === "Enter") {
+    if (e.key === "Enter" && inputValue.trim()) {
       e.preventDefault();
       addTags(inputValue);
     }
   };
 
   const handleAdd = () => {
-    console.log("TagInput: handleAdd triggered.");
     addTags(inputValue);
   };
 
   const handleBlur = () => {
-    console.log("TagInput: handleBlur triggered.");
     addTags(inputValue);
   };
 
