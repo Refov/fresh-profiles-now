@@ -14,37 +14,18 @@ interface TagInputProps {
 const TagInput = ({ value, onChange, maxTags = 8, placeholder = "Type and press Enter" }: TagInputProps) => {
   const [inputValue, setInputValue] = useState("");
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && inputValue.trim()) {
-      e.preventDefault();
-      if (value.length >= maxTags) {
-        return;
-      }
-      // Split input by commas and trim
-      const newTags = inputValue.split(",")
-        .map(t => t.trim())
-        .filter(t => t && !value.includes(t));
-      const limitedTags = [...value];
-      newTags.forEach(tag => {
-        if (limitedTags.length < maxTags && !limitedTags.includes(tag)) {
-          limitedTags.push(tag);
-        }
-      });
-      if (newTags.length > 0) {
-        onChange(limitedTags);
-        setInputValue("");
-      }
-    }
+  // Helper to split input on comma and return trimmed, unique tags (not in value, respecting maxTags)
+  const getNewTags = (input: string) => {
+    return input
+      .split(",")
+      .map(tag => tag.trim())
+      .filter(tag => tag && !value.includes(tag));
   };
 
-  const handleAdd = () => {
-    const val = inputValue.trim();
-    if (!val) return;
+  const addTags = (rawInput: string) => {
+    if (!rawInput.trim()) return;
     if (value.length >= maxTags) return;
-    // Split input by commas and trim
-    const newTags = val.split(",")
-      .map(t => t.trim())
-      .filter(t => t && !value.includes(t));
+    const newTags = getNewTags(rawInput);
     const limitedTags = [...value];
     newTags.forEach(tag => {
       if (limitedTags.length < maxTags && !limitedTags.includes(tag)) {
@@ -55,6 +36,21 @@ const TagInput = ({ value, onChange, maxTags = 8, placeholder = "Type and press 
       onChange(limitedTags);
       setInputValue("");
     }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      addTags(inputValue);
+    }
+  };
+
+  const handleAdd = () => {
+    addTags(inputValue);
+  };
+
+  const handleBlur = () => {
+    addTags(inputValue);
   };
 
   const removeTag = (tagToRemove: string) => {
@@ -68,6 +64,7 @@ const TagInput = ({ value, onChange, maxTags = 8, placeholder = "Type and press 
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           onKeyDown={handleKeyDown}
+          onBlur={handleBlur}
           placeholder={placeholder}
           disabled={value.length >= maxTags}
         />
