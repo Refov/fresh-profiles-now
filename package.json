@@ -3,7 +3,13 @@
   "private": true,
   "version": "1.0.0",
   "description": "Connect job seekers with employers. Post your profile in 60 seconds or browse fresh candidates.",
-  "keywords": ["job search", "hiring", "candidates", "employment", "recruitment"],
+  "keywords": [
+    "job search",
+    "hiring",
+    "candidates",
+    "employment",
+    "recruitment"
+  ],
   "author": "Refov",
   "homepage": "https://refov.com",
   "type": "module",
@@ -57,6 +63,7 @@
     "react": "^18.3.1",
     "react-day-picker": "^8.10.1",
     "react-dom": "^18.3.1",
+    "react-helmet-async": "^2.0.5",
     "react-hook-form": "^7.61.1",
     "react-resizable-panels": "^2.1.9",
     "react-router-dom": "^6.30.1",
