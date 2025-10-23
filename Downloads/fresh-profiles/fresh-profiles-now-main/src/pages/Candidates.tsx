@@ -50,25 +50,37 @@ const Candidates = () => {
       const profileFilters: ProfileFilters = {
         city: trimmedCity || undefined,
         country: trimmedCountry || undefined,
-        skills: trimmedSkills.length > 0 ? trimmedSkills : undefined,
+        // DO NOT send skills to backend - frontend will handle skill filtering with substring matching
+        // skills: trimmedSkills.length > 0 ? trimmedSkills : undefined,
         search: trimmedTitle || undefined,
       };
+
+      console.log('Candidates: Fetching profiles with filters:', profileFilters);
+      console.log('Candidates: Skills to filter on frontend:', trimmedSkills);
 
       const result = await getProfiles(profileFilters, {
         page: currentPage,
         limit: ITEMS_PER_PAGE,
       });
 
+      console.log('Candidates: Received profiles from backend:', result.profiles.length);
+
       let filteredProfiles = result.profiles;
       // Extra robust filtering for skills: case-insensitive, trim, substring
       if (trimmedSkills.length > 0) {
+        console.log('Candidates: Filtering profiles by skills on frontend...');
         filteredProfiles = filteredProfiles.filter(profile => {
           // For each candidate, true if any filter skill found in any profile skill (case-insensitive, trim)
-          return profile.core_skills && profile.core_skills.some(userSkill => {
+          const hasSkill = profile.core_skills && profile.core_skills.some(userSkill => {
             const skillVal = userSkill.trim().toLowerCase();
             return trimmedSkills.some(filterSkill => skillVal.includes(filterSkill));
           });
+          if (hasSkill) {
+            console.log('Candidates: Profile matched:', profile.name, profile.surname, 'with skills:', profile.core_skills);
+          }
+          return hasSkill;
         });
+        console.log('Candidates: After frontend skill filtering:', filteredProfiles.length, 'profiles');
       }
 
       if (resetPage) {
