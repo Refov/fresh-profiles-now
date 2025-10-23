@@ -146,12 +146,71 @@ export async function getProfiles(filters: ProfileFilters = {}, pagination: Pagi
     if (!supabase) {
       return { profiles: [], total: 0, hasMore: false }
     }
+    
+    // Special handling if skills filter is used - use RPC for substring matching
+    const hasSkillsFilter = filters.skills && filters.skills.length > 0
+    
+    if (hasSkillsFilter) {
+      // Use PostgreSQL RPC function for advanced skill substring matching
+      const normalizedSkills = filters.skills!.map(s => s.trim().toLowerCase()).filter(Boolean)
+      
+      // Build other filters as a WHERE clause
+      const rpcFilters: any = {}
+      
+      const { data, error, count } = await supabase
+        .rpc('search_profiles_by_skills', { skill_terms: normalizedSkills }, { count: 'exact' })
+      
+      if (error) {
+        throw new Error(`Database error: ${error.message}`)
+      }
+      
+      // Apply additional filters client-side (city, country, workModes, search)
+      let filteredData = data || []
+      
+      if (filters.city) {
+        const cityLower = filters.city.trim().toLowerCase()
+        filteredData = filteredData.filter(p => p.city?.toLowerCase().includes(cityLower))
+      }
+      
+      if (filters.country) {
+        const countryLower = filters.country.trim().toLowerCase()
+        filteredData = filteredData.filter(p => p.country?.toLowerCase().includes(countryLower))
+      }
+      
+      if (filters.workModes && filters.workModes.length > 0) {
+        filteredData = filteredData.filter(p => 
+          p.work_modes?.some(mode => filters.workModes!.includes(mode))
+        )
+      }
+      
+      if (filters.search) {
+        const searchLower = filters.search.trim().toLowerCase()
+        filteredData = filteredData.filter(p => 
+          p.name?.toLowerCase().includes(searchLower) ||
+          p.surname?.toLowerCase().includes(searchLower) ||
+          p.job_title?.toLowerCase().includes(searchLower) ||
+          p.about_me?.toLowerCase().includes(searchLower)
+        )
+      }
+      
+      // Apply pagination to filtered results
+      const from = (pagination.page - 1) * pagination.limit
+      const to = from + pagination.limit
+      const paginatedData = filteredData.slice(from, to)
+      
+      return {
+        profiles: paginatedData,
+        total: filteredData.length,
+        hasMore: filteredData.length > to
+      }
+    }
+    
+    // Standard query without skills filter
     let query = supabase
       .from('profiles')
       .select('*', { count: 'exact' })
-      .gt('expires_at', new Date().toISOString()) // Only get non-expired profiles
+      .gt('expires_at', new Date().toISOString())
     
-    // Apply filters (trim all text inputs to ignore leading/trailing spaces)
     if (filters.workModes && filters.workModes.length > 0) {
       query = query.overlaps('work_modes', filters.workModes)
     }
@@ -170,14 +229,6 @@ export async function getProfiles(filters: ProfileFilters = {}, pagination: Pagi
       }
     }
     
-    if (filters.skills && filters.skills.length > 0) {
-      // Skills are normalized (lowercase, trimmed) in DB, so search with normalized terms
-      const normalizedSkills = filters.skills.map(s => s.trim().toLowerCase()).filter(Boolean)
-      for (const skill of normalizedSkills) {
-        query = query.contains('core_skills', [skill])
-      }
-    }
-    
     if (filters.search) {
       const trimmedSearch = filters.search.trim()
       if (trimmedSearch) {
@@ -186,7 +237,6 @@ export async function getProfiles(filters: ProfileFilters = {}, pagination: Pagi
       }
     }
     
-    // Apply pagination
     const from = (pagination.page - 1) * pagination.limit
     const to = from + pagination.limit - 1
     
