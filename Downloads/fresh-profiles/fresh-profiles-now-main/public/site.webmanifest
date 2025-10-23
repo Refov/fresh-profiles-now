@@ -1,0 +1,16 @@
+{
+  "name": "Fresh Profiles Now",
+  "short_name": "FreshProfiles",
+  "description": "Connect job seekers with employers. Post your profile in 60 seconds or browse fresh candidates.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
