@@ -20,20 +20,41 @@ const TagInput = ({ value, onChange, maxTags = 8, placeholder = "Type and press 
       if (value.length >= maxTags) {
         return;
       }
-      if (!value.includes(inputValue.trim())) {
-        onChange([...value, inputValue.trim()]);
+      // Split input by commas and trim
+      const newTags = inputValue.split(",")
+        .map(t => t.trim())
+        .filter(t => t && !value.includes(t));
+      const limitedTags = [...value];
+      newTags.forEach(tag => {
+        if (limitedTags.length < maxTags && !limitedTags.includes(tag)) {
+          limitedTags.push(tag);
+        }
+      });
+      if (newTags.length > 0) {
+        onChange(limitedTags);
         setInputValue("");
       }
     }
   };
 
   const handleAdd = () => {
-    const v = inputValue.trim();
-    if (!v) return;
+    const val = inputValue.trim();
+    if (!val) return;
     if (value.length >= maxTags) return;
-    if (value.includes(v)) return;
-    onChange([...value, v]);
-    setInputValue("");
+    // Split input by commas and trim
+    const newTags = val.split(",")
+      .map(t => t.trim())
+      .filter(t => t && !value.includes(t));
+    const limitedTags = [...value];
+    newTags.forEach(tag => {
+      if (limitedTags.length < maxTags && !limitedTags.includes(tag)) {
+        limitedTags.push(tag);
+      }
+    });
+    if (newTags.length > 0) {
+      onChange(limitedTags);
+      setInputValue("");
+    }
   };
 
   const removeTag = (tagToRemove: string) => {
