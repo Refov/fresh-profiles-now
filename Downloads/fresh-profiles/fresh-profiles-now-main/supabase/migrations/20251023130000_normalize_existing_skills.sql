@@ -1,7 +1,7 @@
 -- One-time migration to normalize existing core_skills data
 -- This splits comma-separated skills, trims, lowercases, and deduplicates
 
-DO 
+DO $$
 DECLARE
   profile_record RECORD;
   normalized_skills TEXT[];
@@ -31,4 +31,4 @@ BEGIN
     SET core_skills = normalized_skills
     WHERE id = profile_record.id;
   END LOOP;
-END ;
+END $$;
