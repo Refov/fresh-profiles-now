@@ -142,47 +142,33 @@ export async function getProfiles(filters: ProfileFilters = {}, pagination: Pagi
       .from('profiles')
       .select('*', { count: 'exact' })
       .gt('expires_at', new Date().toISOString()) // Only get non-expired profiles
-    
-    // Apply filters
+
+    // Apply filters (all except skills)
     if (filters.workModes && filters.workModes.length > 0) {
       query = query.overlaps('work_modes', filters.workModes)
     }
-    
     if (filters.city) {
       query = query.ilike('city', `%${filters.city}%`)
     }
-    
     if (filters.country) {
       query = query.ilike('country', `%${filters.country}%`)
     }
-    
-    if (filters.skills && filters.skills.length > 0) {
-      // For skills, we need to check if ALL skills are present (AND logic)
-      // Use case-insensitive matching for skills by converting to lowercase
-      for (const skill of filters.skills) {
-        query = query.contains('core_skills', [skill.toLowerCase()])
-      }
-    }
-    
+    // SKILL SEARCH REMOVED FROM BACKEND. See src/pages/Candidates.tsx for frontend filtering logic.
     if (filters.search) {
       const searchTerm = `%${filters.search}%`
       query = query.or(`name.ilike.${searchTerm},surname.ilike.${searchTerm},job_title.ilike.${searchTerm},about_me.ilike.${searchTerm}`)
     }
-    
-    // Apply pagination
+    // Pagination
     const from = (pagination.page - 1) * pagination.limit
     const to = from + pagination.limit - 1
-    
     query = query
       .order('created_at', { ascending: false })
       .range(from, to)
-    
+
     const { data, error, count } = await query
-    
     if (error) {
       throw new Error(`Database error: ${error.message}`)
     }
-    
     return {
       profiles: data || [],
       total: count || 0,
