@@ -50,6 +50,24 @@ function ensureLinkedInProtocol(url: string): string {
   return 'https://' + url
 }
 
+// Normalize skills array: split commas, trim, lowercase, dedupe
+function normalizeSkills(skills: string[]): string[] {
+  const normalized: string[] = []
+  
+  skills.forEach(skill => {
+    // Split by comma in case multiple skills were entered as one
+    const parts = skill.split(',')
+    parts.forEach(part => {
+      const trimmed = part.trim().toLowerCase()
+      if (trimmed && !normalized.includes(trimmed)) {
+        normalized.push(trimmed)
+      }
+    })
+  })
+  
+  return normalized
+}
+
 // Save a profile to Supabase
 export async function saveProfile(profileData: Omit<Profile, 'id' | 'created_at' | 'expires_at'>): Promise<{ success: boolean; error?: string; profile?: Profile }> {
   try {
@@ -95,6 +113,7 @@ export async function saveProfile(profileData: Omit<Profile, 'id' | 'created_at'
     
     const profileToSave = {
       ...profileData,
+      core_skills: normalizeSkills(profileData.core_skills), // Normalize: split commas, trim, lowercase, dedupe
       linkedin_url: ensureLinkedInProtocol(profileData.linkedin_url), // Store with proper protocol
       expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 days from now
     }
@@ -143,30 +162,39 @@ export async function getProfiles(filters: ProfileFilters = {}, pagination: Pagi
       .select('*', { count: 'exact' })
       .gt('expires_at', new Date().toISOString()) // Only get non-expired profiles
     
-    // Apply filters
+    // Apply filters (trim all text inputs to ignore leading/trailing spaces)
     if (filters.workModes && filters.workModes.length > 0) {
       query = query.overlaps('work_modes', filters.workModes)
     }
     
     if (filters.city) {
-      query = query.ilike('city', `%${filters.city}%`)
+      const trimmedCity = filters.city.trim()
+      if (trimmedCity) {
+        query = query.ilike('city', `%${trimmedCity}%`)
+      }
     }
     
     if (filters.country) {
-      query = query.ilike('country', `%${filters.country}%`)
+      const trimmedCountry = filters.country.trim()
+      if (trimmedCountry) {
+        query = query.ilike('country', `%${trimmedCountry}%`)
+      }
     }
     
     if (filters.skills && filters.skills.length > 0) {
-      // For skills, we need to check if ALL skills are present (AND logic)
-      // Use case-insensitive matching for skills by converting to lowercase
-      for (const skill of filters.skills) {
-        query = query.contains('core_skills', [skill.toLowerCase()])
+      // Skills are normalized (lowercase, trimmed) in DB, so search with normalized terms
+      const normalizedSkills = filters.skills.map(s => s.trim().toLowerCase()).filter(Boolean)
+      for (const skill of normalizedSkills) {
+        query = query.contains('core_skills', [skill])
       }
     }
     
     if (filters.search) {
-      const searchTerm = `%${filters.search}%`
-      query = query.or(`name.ilike.${searchTerm},surname.ilike.${searchTerm},job_title.ilike.${searchTerm},about_me.ilike.${searchTerm}`)
+      const trimmedSearch = filters.search.trim()
+      if (trimmedSearch) {
+        const searchTerm = `%${trimmedSearch}%`
+        query = query.or(`name.ilike.${searchTerm},surname.ilike.${searchTerm},job_title.ilike.${searchTerm},about_me.ilike.${searchTerm}`)
+      }
     }
     
     // Apply pagination
