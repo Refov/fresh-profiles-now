@@ -183,6 +183,7 @@ const PostProfile = () => {
     setLastSubmission(now);
 
     try {
+      console.log('PostProfile: About to call saveProfile - NO spam filter (v3.0)');
       const result = await saveProfile({
         name: formData.name,
         surname: formData.surname,
@@ -194,6 +195,7 @@ const PostProfile = () => {
         linkedin_url: formData.linkedinUrl,
         core_skills: formData.coreSkills,
       });
+      console.log('PostProfile: saveProfile result:', result);
 
       if (result.success) {
         toast({
@@ -371,16 +373,10 @@ const PostProfile = () => {
                 <Label>Core Skills (max 8)</Label>
                 <TagInput
                   value={formData.coreSkills}
-                  onChange={(skills) => {
-                    console.log('PARENT onChange coreSkills:', skills);
-                    setFormData({ ...formData, coreSkills: skills });
-                  }}
+                  onChange={(skills) => setFormData({ ...formData, coreSkills: skills })}
                   maxTags={8}
                   placeholder="Type a skill and press Enter"
                 />
-                <div style={{ fontFamily: 'monospace', fontSize: 12, whiteSpace: 'pre-wrap', background: '#f4f4f4', padding: 8, marginTop: 6 }}>
-                  Current skills array: {JSON.stringify(formData.coreSkills, null, 2)}
-                </div>
               </div>
 
               <div className="space-y-2">
