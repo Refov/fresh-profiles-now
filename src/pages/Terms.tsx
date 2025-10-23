@@ -1,12 +1,20 @@
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { SEO } from "@/components/SEO";
 
 const Terms = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-white">
+    <>
+      <SEO 
+        title="Terms of Service"
+        description="Fresh Profiles Now terms of service. User guidelines, posting rules, and acceptable use policy for job seekers and recruiters."
+        canonicalUrl="https://refov.com/terms"
+      />
+      
+      <div className="min-h-screen bg-white">
       <div className="container mx-auto px-4 py-12 max-w-4xl">
         <Button
           variant="ghost"
@@ -165,6 +173,7 @@ const Terms = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

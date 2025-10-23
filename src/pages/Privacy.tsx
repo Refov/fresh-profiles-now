@@ -1,12 +1,20 @@
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { SEO } from "@/components/SEO";
 
 const Privacy = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-white">
+    <>
+      <SEO 
+        title="Privacy Policy"
+        description="Fresh Profiles Now privacy policy. Learn how we collect, use, and protect your data. No accounts, minimal data collection, 30-day auto-deletion."
+        canonicalUrl="https://refov.com/privacy"
+      />
+      
+      <div className="min-h-screen bg-white">
       <div className="container mx-auto px-4 py-12 max-w-4xl">
         <Button
           variant="ghost"
@@ -169,6 +177,7 @@ const Privacy = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

@@ -22,3 +22,4 @@ COMMENT ON POLICY "Only service role can delete profiles" ON profiles IS
 COMMENT ON POLICY "Allow update for same LinkedIn URL" ON profiles IS 
   'Allows profile updates when same LinkedIn URL is used (deduplication)';
 
+

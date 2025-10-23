@@ -11,8 +11,30 @@ import { ArrowLeft, Search, MapPin, Briefcase, ExternalLink } from "lucide-react
 import { getProfiles, ProfileFilters, ProfileResult } from "@/lib/supabaseProfiles";
 import { useToast } from "@/hooks/use-toast";
 import { Profile } from "@/lib/supabase";
+import { SEO } from "@/components/SEO";
 
 const Candidates = () => {
+  // AI-optimized schema for job posting aggregate
+  const schemaData = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "name": "Job Seeker Profiles",
+    "description": "Browse fresh candidate profiles updated daily. Filter by skills (React, Python, DevOps, etc.), location, and job title. All profiles are active and looking for opportunities.",
+    "numberOfItems": total,
+    "itemListElement": profiles.slice(0, 10).map((profile, index) => ({
+      "@type": "Person",
+      "position": index + 1,
+      "name": `${profile.name} ${profile.surname}`,
+      "jobTitle": profile.job_title,
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": profile.city,
+        "addressCountry": profile.country
+      },
+      "knowsAbout": profile.core_skills,
+      "description": profile.about_me?.substring(0, 200)
+    }))
+  };
   const navigate = useNavigate();
   const { toast } = useToast();
   const [profiles, setProfiles] = useState<Profile[]>([]);
@@ -103,17 +125,26 @@ const Candidates = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary py-8 px-4">
-      <div className="container max-w-6xl mx-auto">
-        <Button variant="ghost" onClick={() => navigate("/")} className="mb-6">
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back
-        </Button>
+    <>
+      <SEO 
+        title="Browse Job Candidates - Find Your Next Hire"
+        description={`Search ${total} fresh candidate profiles. Filter by skills, location, and job title. Find developers, designers, marketers, and more. All profiles are active job seekers updated within 30 days.`}
+        keywords="browse candidates, hire developers, find employees, tech recruitment, job candidates, developer profiles, search resumes, active job seekers, tech talent"
+        canonicalUrl="https://refov.com/candidates"
+        schemaData={schemaData}
+      />
+    
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary py-8 px-4">
+        <div className="container max-w-6xl mx-auto">
+          <Button variant="ghost" onClick={() => navigate("/")} className="mb-6">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back
+          </Button>
 
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Browse Candidates</h1>
-          <p className="text-muted-foreground">Fresh profiles updated daily</p>
-        </div>
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold mb-2">Browse Candidates</h1>
+            <p className="text-muted-foreground">Fresh profiles updated daily</p>
+          </div>
 
         <Card className="p-6 mb-8">
           <div className="space-y-4">
@@ -260,6 +291,7 @@ const Candidates = () => {
         )}
       </div>
     </div>
+    </>
   );
 };
 

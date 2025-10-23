@@ -1,12 +1,61 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Users, Briefcase } from "lucide-react";
+import { SEO } from "@/components/SEO";
 
 const Index = () => {
   const navigate = useNavigate();
 
+  // AI-optimized structured data
+  const schemaData = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Fresh Profiles Now",
+    "alternateName": "Refov",
+    "url": "https://refov.com",
+    "description": "The fastest way to connect job seekers with employers. Post your professional profile in 60 seconds or browse fresh candidates. No account required. Profiles auto-expire every 30 days ensuring fresh, active talent.",
+    "keywords": "job search platform, hire developers, tech recruitment, post job profile, find candidates, no signup job board, fresh profiles, active job seekers",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": {
+        "@type": "EntryPoint",
+        "urlTemplate": "https://refov.com/candidates?search={search_term_string}"
+      },
+      "query-input": "required name=search_term_string"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "Fresh Profiles Now",
+      "url": "https://refov.com"
+    },
+    "mainEntity": {
+      "@type": "Service",
+      "name": "Job Seeker & Employer Matching Platform",
+      "description": "Free platform connecting job seekers with employers. Features: instant profile posting, advanced candidate filtering by skills and location, no account required, 30-day active profiles.",
+      "provider": {
+        "@type": "Organization",
+        "name": "Fresh Profiles Now"
+      },
+      "serviceType": "Job Recruitment Platform",
+      "areaServed": "Worldwide",
+      "audience": {
+        "@type": "Audience",
+        "audienceType": ["Job Seekers", "Recruiters", "Employers", "HR Professionals"]
+      }
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-white">
+    <>
+      <SEO 
+        title="Find Your Next Job or Hire - Fresh Profiles Now"
+        description="The fastest job search platform. Job seekers: post your profile in 60 seconds. Recruiters: browse fresh candidates updated daily. No signup required. Free for both sides."
+        keywords="job search, hire developers, tech recruitment, post job profile, find candidates, no signup job board, free job posting, active job seekers, fresh candidates, quick hire"
+        canonicalUrl="https://refov.com"
+        schemaData={schemaData}
+      />
+      
+      <div className="min-h-screen bg-white">
       <main className="container mx-auto px-4 py-20">
         <div className="max-w-5xl mx-auto">
           {/* Hero Section */}
@@ -111,6 +160,7 @@ const Index = () => {
         </div>
       </main>
     </div>
+    </>
   );
 };
 

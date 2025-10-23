@@ -11,8 +11,47 @@ import { ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { saveProfile } from "@/lib/supabaseProfiles";
 import TagInput from "@/components/TagInput";
+import { SEO } from "@/components/SEO";
 
 const PostProfile = () => {
+  const schemaData = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "Post Your Job Seeker Profile",
+    "description": "Create your professional profile in 60 seconds. Add your skills, location, and job preferences. No account required. Your profile stays active for 30 days and is visible to recruiters immediately.",
+    "mainEntity": {
+      "@type": "HowTo",
+      "name": "How to Post Your Job Profile",
+      "description": "Quick guide to posting your job seeker profile",
+      "step": [
+        {
+          "@type": "HowToStep",
+          "position": 1,
+          "name": "Enter Basic Info",
+          "text": "Add your name, job title, and location"
+        },
+        {
+          "@type": "HowToStep",
+          "position": 2,
+          "name": "Add Skills",
+          "text": "List your core skills and technologies"
+        },
+        {
+          "@type": "HowToStep",
+          "position": 3,
+          "name": "Work Preferences",
+          "text": "Select remote, hybrid, or onsite preferences"
+        },
+        {
+          "@type": "HowToStep",
+          "position": 4,
+          "name": "Submit",
+          "text": "Click post - no account needed!"
+        }
+      ],
+      "totalTime": "PT1M"
+    }
+  };
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -222,24 +261,33 @@ const PostProfile = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary py-8 px-4">
-      <div className="container max-w-2xl mx-auto">
-        <Button
-          variant="ghost"
-          onClick={() => navigate("/")}
-          className="mb-6"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back
-        </Button>
+    <>
+      <SEO 
+        title="Post Your Profile - Get Hired in 60 Seconds"
+        description="Create your job seeker profile instantly. No account needed. Add your skills, location, and work preferences. Your profile goes live immediately and stays active for 30 days. Free for job seekers."
+        keywords="post job profile, create profile, job seeker, get hired, find jobs, no signup job board, free job posting, quick profile, career profile"
+        canonicalUrl="https://refov.com/post"
+        schemaData={schemaData}
+      />
+    
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary py-8 px-4">
+        <div className="container max-w-2xl mx-auto">
+          <Button
+            variant="ghost"
+            onClick={() => navigate("/")}
+            className="mb-6"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back
+          </Button>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Post Your Profile</CardTitle>
-            <CardDescription>
-              Your profile will be visible for 30 days and then automatically deleted
-            </CardDescription>
-          </CardHeader>
+          <Card>
+            <CardHeader>
+              <CardTitle>Post Your Profile</CardTitle>
+              <CardDescription>
+                Your profile will be visible for 30 days and then automatically deleted
+              </CardDescription>
+            </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-2 gap-4">
@@ -420,6 +468,7 @@ const PostProfile = () => {
         </Card>
       </div>
     </div>
+    </>
   );
 };
 
