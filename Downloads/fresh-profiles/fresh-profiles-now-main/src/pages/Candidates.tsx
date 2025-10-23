@@ -58,9 +58,12 @@ const Candidates = () => {
       console.log('Candidates: Fetching profiles with filters:', profileFilters);
       console.log('Candidates: Skills to filter on frontend:', trimmedSkills);
 
+      // If we have skills, fetch a larger batch so frontend filtering has enough data
+      const effectiveLimit = trimmedSkills.length > 0 ? 500 : ITEMS_PER_PAGE;
+
       const result = await getProfiles(profileFilters, {
         page: currentPage,
-        limit: ITEMS_PER_PAGE,
+        limit: effectiveLimit,
       });
 
       console.log('Candidates: Received profiles from backend:', result.profiles.length);
@@ -90,7 +93,8 @@ const Candidates = () => {
         setProfiles(prev => [...prev, ...filteredProfiles]);
       }
 
-      setHasMore(result.hasMore);
+      // If using skills filter, we fetched a big batch already; disable hasMore to avoid duplications
+      setHasMore(trimmedSkills.length > 0 ? false : result.hasMore);
       setTotal(result.total);
     } catch (error: any) {
       toast({
