@@ -273,7 +273,7 @@ const Candidates = () => {
                           ))}
                         </div>
                       </div>
-                      <div className="rounded-lg border bg-white dark:bg-gray-900/40 p-3">
+                      <div className="rounded-lg border bg-white dark:bg-gray-900/40 p-4">
                         <div className="flex flex-col sm:flex-row gap-2">
                           <Button onClick={() => handleReveal(profile)} className="w-full sm:w-auto" variant={revealedIds.has(profile.id) ? "default" : "outline"}>
                             <ExternalLink className="w-4 h-4 mr-2" />
