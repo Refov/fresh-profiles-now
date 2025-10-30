@@ -2,6 +2,11 @@ Options -Indexes
 
 RewriteEngine On
 
+# Deny direct access to private underscore PHP files (e.g., _config.local.php)
+<FilesMatch "^_.*\.php$">
+  Require all denied
+</FilesMatch>
+
 # Allow direct access to API endpoints (do not rewrite to SPA)
 RewriteRule ^api/ - [L]
 

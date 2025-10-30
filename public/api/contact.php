@@ -1,9 +1,4 @@
 <?php
-// Optional local config loader (server-only). Create api/_config.local.php with putenv calls.
-$localCfg = __DIR__ . '/_config.local.php';
-if (file_exists($localCfg)) {
-  include $localCfg;
-}
 header('Content-Type: application/json');
 
 // CORS for form posting if needed
@@ -60,11 +55,11 @@ if ($turnstileSecret) {
 }
 
 // Fetch candidate email from Supabase REST
-$supabaseUrl = getenv('SUPABASE_URL');
-$serviceKey = getenv('SUPABASE_SERVICE_ROLE_KEY');
+$supabaseUrl = getenv('SUPABASE_URL') ?: getenv('REFOV_SUPABASE_URL');
+$serviceKey = getenv('SUPABASE_SERVICE_ROLE_KEY') ?: getenv('REFOV_SUPABASE_SERVICE_ROLE_KEY');
 if (!$supabaseUrl || !$serviceKey) {
   http_response_code(500);
-  echo json_encode(['error' => 'Server not configured']);
+  echo json_encode(['error' => 'Server not configured: missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY']);
   exit;
 }
 

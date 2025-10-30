@@ -22,7 +22,12 @@ $parts = explode(' ', $authHeader);
 $provided = isset($parts[0], $parts[1]) && strtolower($parts[0]) === 'bearer' ? $parts[1] : '';
 
 // Read secret from env if available, else from placeholder string
-$expected = getenv('MAIL_WEBHOOK_SECRET') ?: 'sadfjf@@$9asf;askf($(@';
+$expected = getenv('MAIL_WEBHOOK_SECRET');
+if (!$expected) {
+  http_response_code(500);
+  echo json_encode(['error' => 'Server not configured: missing MAIL_WEBHOOK_SECRET']);
+  exit;
+}
 
 if (!$provided || !$expected || !hash_equals($expected, $provided)) {
   http_response_code(403);
