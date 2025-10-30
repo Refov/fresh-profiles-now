@@ -4,6 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/lib/supabase";
 
 interface ContactCandidateProps {
   profileId: string;
@@ -24,14 +25,11 @@ const ContactCandidate = ({ profileId }: ContactCandidateProps) => {
     }
     setLoading(true);
     try {
-      const res = await fetch("/api/contact.php", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ recruiterEmail, profileId, message }),
+      const { data, error } = await supabase.functions.invoke("send-contact-message", {
+        body: { recruiterEmail, profileId, message },
       });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok || data?.error) {
-        throw new Error(data?.error || `Failed (HTTP ${res.status})`);
+      if (error || (data && (data as any).error)) {
+        throw new Error(error?.message || (data as any)?.error || "Failed to send message");
       }
       toast({ title: "Message sent", description: "Your message was delivered to the candidate." });
       setStep("sent");
