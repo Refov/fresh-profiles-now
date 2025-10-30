@@ -46,12 +46,12 @@ const Privacy = () => {
                 <li>Core skills</li>
                 <li>LinkedIn profile URL</li>
                 <li>
-                  <strong>Candidate email address</strong> (kept private and used only to deliver recruiter messages through our site; never displayed publicly)
+                  Candidate email address (kept private and used only to deliver recruiter messages through our site; never displayed publicly)
                 </li>
                 <li>Profile creation timestamp</li>
               </ul>
               <p className="text-gray-700 mt-3">
-                We <strong>do not collect or store recruiter email addresses</strong>. When a recruiter contacts a candidate, the recruiter email is used only transiently to set the <em>Reply‑To</em> header and is not retained by us.
+                We do not collect or store recruiter email addresses. When a recruiter contacts a candidate, the recruiter email is used only transiently to set the <em>Reply‑To</em> header and is not retained by us.
               </p>
             </section>
 
@@ -101,7 +101,7 @@ const Privacy = () => {
                 <li>Not shared with marketing companies</li>
                 <li>Not used for advertising purposes</li>
                 <li>
-                  <strong>Candidate email addresses are never displayed publicly or shared</strong>; they are used only to forward recruiter messages initiated on our site.
+                  Candidate email addresses are never displayed publicly or shared; they are used only to forward recruiter messages initiated on our site.
                 </li>
               </ul>
             </section>
