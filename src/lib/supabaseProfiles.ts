@@ -79,6 +79,10 @@ export async function saveProfile(profileData: Omit<Profile, 'id' | 'created_at'
     if (profileData.about_me.length < 20) {
       return { success: false, error: 'About me section must be at least 20 characters' };
     }
+    // Basic email validation
+    if (!profileData.email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(profileData.email)) {
+      return { success: false, error: 'Valid email address required' }
+    }
     // Normalize LinkedIn URL
     const normalizedLinkedIn = normalizeLinkedInUrl(profileData.linkedin_url)
     
@@ -101,12 +105,7 @@ export async function saveProfile(profileData: Omit<Profile, 'id' | 'created_at'
       ...profileData,
       core_skills: normalizeSkills(profileData.core_skills), // Normalize: split commas, trim, lowercase, dedupe
       linkedin_url: ensureLinkedInProtocol(profileData.linkedin_url), // Store with proper protocol
-<<<<<<< HEAD
       expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 days from now
-=======
-      expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days from now
-      email: profileData.email,
->>>>>>> 0f14f71 (feat(stag): add hidden candidate email field and update profile creation flow for recruiter contact)
     }
     
     let result

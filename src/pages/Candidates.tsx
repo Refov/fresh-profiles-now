@@ -12,6 +12,7 @@ import { getProfiles, ProfileFilters, ProfileResult } from "@/lib/supabaseProfil
 import { useToast } from "@/hooks/use-toast";
 import { Profile } from "@/lib/supabase";
 import { SEO } from "@/components/SEO";
+import ContactCandidate from "@/components/ContactCandidate";
 
 const Candidates = () => {
   const navigate = useNavigate();
@@ -28,6 +29,7 @@ const Candidates = () => {
   const [hasMore, setHasMore] = useState(true);
   const [revealedIds, setRevealedIds] = useState<Set<string>>(new Set());
   const [total, setTotal] = useState(0);
+  const [contactOpenId, setContactOpenId] = useState<string | null>(null);
   const ITEMS_PER_PAGE = 20;
 
   // AI-optimized schema for job posting aggregate (built dynamically)
@@ -275,6 +277,16 @@ const Candidates = () => {
                           {revealedIds.has(profile.id) ? "Open LinkedIn Profile" : "Reveal LinkedIn"}
                         </Button>
                       </div>
+                      <div className="pt-2">
+                        <Button onClick={() => setContactOpenId(prev => prev === profile.id ? null : profile.id)} className="w-full sm:w-auto" variant="outline">
+                          Contact Candidate
+                        </Button>
+                      </div>
+                      {contactOpenId === profile.id && (
+                        <div className="mt-4">
+                          <ContactCandidate profileId={profile.id} />
+                        </div>
+                      )}
                     </div>
                   </AccordionContent>
                 </AccordionItem>

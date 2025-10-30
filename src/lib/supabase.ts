@@ -17,10 +17,7 @@ export interface Profile {
   about_me: string
   linkedin_url: string
   core_skills: string[]
-<<<<<<< HEAD
-=======
-  email: string
->>>>>>> 0f14f71 (feat(stag): add hidden candidate email field and update profile creation flow for recruiter contact)
   created_at: string
   expires_at: string
+  email: string
 }

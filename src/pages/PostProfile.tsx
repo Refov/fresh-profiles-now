@@ -68,11 +68,8 @@ const PostProfile = () => {
     aboutMe: "",
     linkedinUrl: "",
     coreSkills: [] as string[],
+    email: "", 
     agreedToTerms: false,
-<<<<<<< HEAD
-=======
-    email: "",
->>>>>>> 0f14f71 (feat(stag): add hidden candidate email field and update profile creation flow for recruiter contact)
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -175,6 +172,15 @@ const PostProfile = () => {
       return;
     }
 
+    if (!formData.email.trim() || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(formData.email)) {
+      toast({
+        title: "Valid email required",
+        description: "Please enter a valid email address (not displayed publicly)",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (!formData.aboutMe.trim()) {
       toast({
         title: "About Me required",
@@ -193,19 +199,6 @@ const PostProfile = () => {
       return;
     }
 
-<<<<<<< HEAD
-=======
-    // Email validation
-    if (!formData.email.trim() || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(formData.email)) {
-      toast({
-        title: "Valid email required",
-        description: "Please enter a valid email address (it will never be shared publicly)",
-        variant: "destructive",
-      });
-      return;
-    }
-
->>>>>>> 0f14f71 (feat(stag): add hidden candidate email field and update profile creation flow for recruiter contact)
     if (formData.coreSkills.length === 0) {
       toast({
         title: "Skills required",
@@ -250,10 +243,7 @@ const PostProfile = () => {
         about_me: formData.aboutMe,
         linkedin_url: formData.linkedinUrl,
         core_skills: formData.coreSkills,
-<<<<<<< HEAD
-=======
         email: formData.email,
->>>>>>> 0f14f71 (feat(stag): add hidden candidate email field and update profile creation flow for recruiter contact)
       });
       console.log('PostProfile: saveProfile result:', result);
 
@@ -328,6 +318,16 @@ const PostProfile = () => {
                     required
                     value={formData.surname}
                     onChange={(e) => setFormData({ ...formData, surname: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2 col-span-2">
+                  <Label htmlFor="email">Email (not shown publicly, used for contact)</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    required
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   />
                 </div>
               </div>
@@ -439,24 +439,6 @@ const PostProfile = () => {
               </div>
 
               <div className="space-y-2">
-<<<<<<< HEAD
-=======
-                <Label htmlFor="email">Email address (private, not shown publicly)</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  required
-                  placeholder="your@email.com"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                />
-                <p className="text-xs text-muted-foreground">
-                  This address will <b>never</b> be shown to recruiters or third parties, but lets them securely message you via this site.
-                </p>
-              </div>
-
-              <div className="space-y-2">
->>>>>>> 0f14f71 (feat(stag): add hidden candidate email field and update profile creation flow for recruiter contact)
                 <Label>Core Skills (max 8)</Label>
                 <TagInput
                   value={formData.coreSkills}
