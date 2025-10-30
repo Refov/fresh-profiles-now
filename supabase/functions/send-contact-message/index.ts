@@ -54,10 +54,15 @@ serve(async (req) => {
 
     const ip = req.headers.get("x-forwarded-for") || req.headers.get("cf-connecting-ip") || "unknown";
 
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-    );
+    const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+    if (!supabaseUrl || !serviceKey) {
+      return new Response(
+        JSON.stringify({ error: "Server not configured (missing SUPABASE_URL or SERVICE_ROLE key)" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 }
+      );
+    }
+    const supabase = createClient(supabaseUrl, serviceKey);
 
     // Verify code: find a non-used, non-expired record for this email & profile
     const codeHash = await hashString(`${recruiterEmail}|${profileId}|${code}`);

@@ -36,7 +36,8 @@ const ContactCandidate = ({ profileId }: ContactCandidateProps) => {
       toast({ title: "Verification code sent", description: "Check your email for the code." });
       setStep("compose");
     } catch (err: any) {
-      toast({ title: "Failed", description: err.message || "Could not send verification code", variant: "destructive" });
+      const details = err?.message || (typeof err === 'string' ? err : 'Network or server error');
+      toast({ title: "Failed", description: details, variant: "destructive" });
     } finally {
       setLoading(false);
     }

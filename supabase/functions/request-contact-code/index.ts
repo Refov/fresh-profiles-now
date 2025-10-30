@@ -54,17 +54,25 @@ serve(async (req) => {
 
     const ip = req.headers.get("x-forwarded-for") || req.headers.get("cf-connecting-ip") || "unknown";
 
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-    );
+    const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+    if (!supabaseUrl || !serviceKey) {
+      return new Response(
+        JSON.stringify({ error: "Server not configured (missing SUPABASE_URL or SERVICE_ROLE key)" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 }
+      );
+    }
+    const supabase = createClient(supabaseUrl, serviceKey);
 
     // Basic per-IP daily rate limit for requests (max 50)
-    const { count } = await supabase
+    const { count, error: countError } = await supabase
       .from("recruiter_verifications")
       .select("id", { count: "exact", head: true })
       .gte("created_at", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
       .eq("ip_address", ip);
+    if (countError) {
+      console.warn("Count check error (continuing):", countError.message);
+    }
     if ((count || 0) >= 50) {
       return new Response(
         JSON.stringify({ error: "Daily limit reached. Try again tomorrow." }),
