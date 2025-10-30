@@ -271,13 +271,11 @@ const Candidates = () => {
                           <Badge key={s} variant="outline">{s}</Badge>
                         ))}
                       </div>
-                      <div className="pt-2">
+                      <div className="pt-2 flex flex-col sm:flex-row gap-2">
                         <Button onClick={() => handleReveal(profile)} className="w-full sm:w-auto" variant={revealedIds.has(profile.id) ? "default" : "outline"}>
                           <ExternalLink className="w-4 h-4 mr-2" />
                           {revealedIds.has(profile.id) ? "Open LinkedIn Profile" : "Reveal LinkedIn"}
                         </Button>
-                      </div>
-                      <div className="pt-2">
                         <Button onClick={() => setContactOpenId(prev => prev === profile.id ? null : profile.id)} className="w-full sm:w-auto" variant="outline">
                           Contact Candidate
                         </Button>
