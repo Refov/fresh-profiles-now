@@ -1,17 +1,36 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+const baseCorsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
   "Access-Control-Max-Age": "86400",
 };
 
 serve(async (req) => {
+  const origin = req.headers.get("origin") || "";
+  const allowList = (Deno.env.get("ALLOWED_ORIGINS") || "https://stage.refov.com,https://refov.com")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const isAllowedOrigin = origin ? allowList.includes(origin) : true; // allow server-to-server (no origin)
+
+  // Handle preflight
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    if (!isAllowedOrigin) {
+      return new Response("CORS not allowed", { status: 403 });
+    }
+    return new Response(null, { headers: { ...baseCorsHeaders, "Access-Control-Allow-Origin": origin } });
   }
+
+  if (origin && !isAllowedOrigin) {
+    return new Response(JSON.stringify({ error: "CORS not allowed" }), {
+      status: 403,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  const corsHeaders = { ...baseCorsHeaders, "Access-Control-Allow-Origin": origin || "*" };
 
   try {
     const { profileId, recruiterEmail, message } = await req.json();
@@ -42,6 +61,21 @@ serve(async (req) => {
     }
 
     const supabase = createClient(supabaseUrl, serviceKey);
+
+    // Rate limit by IP (25/day)
+    const ip = req.headers.get("x-forwarded-for") || req.headers.get("cf-connecting-ip") || "unknown";
+    const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const { count: sentCount } = await supabase
+      .from("recruiter_messages")
+      .select("id", { count: "exact", head: true })
+      .gte("created_at", since)
+      .eq("sender_ip", ip);
+    if ((sentCount || 0) >= 25) {
+      return new Response(
+        JSON.stringify({ error: "Daily limit reached" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 429 }
+      );
+    }
 
     // Get candidate email securely
     const { data: profile, error: pErr } = await supabase
@@ -89,6 +123,11 @@ serve(async (req) => {
         { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 502 }
       );
     }
+
+    // Log message for rate limiting/audit
+    await supabase
+      .from("recruiter_messages")
+      .insert({ profile_id: profileId, recruiter_email: recruiterEmail, message, sender_ip: ip });
 
     return new Response(
       JSON.stringify({ success: true }),
