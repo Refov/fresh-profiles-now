@@ -7,6 +7,6 @@
 putenv('SUPABASE_URL','https://icvvtqwiqudvvrlcsjyu.supabase.co');
 
 // Supabase service_role key (paste the actual key below for testing ONLY)
-putenv('SUPABASE_SERVICE_ROLE_KEY','REPLACE_WITH_SERVICE_ROLE_KEY');
+putenv('SUPABASE_SERVICE_ROLE_KEY','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImljdnZ0cXdpcXVkdnZybGNzanl1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MDcwMDkyNiwiZXhwIjoyMDc2Mjc2OTI2fQ.YShWa95e6aM75QQo3HtEA5gR816Q9kMYZzbmN6bcu7g');
 
 
