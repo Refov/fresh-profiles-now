@@ -265,26 +265,30 @@ const Candidates = () => {
                   </AccordionTrigger>
                   <AccordionContent>
                     <div className="p-4 pt-0 space-y-4">
-                      <p className="text-sm whitespace-pre-wrap">{profile.about_me}</p>
-                      <div className="flex flex-wrap gap-2">
-                        {profile.core_skills.map((s) => (
-                          <Badge key={s} variant="outline">{s}</Badge>
-                        ))}
-                      </div>
-                      <div className="pt-2 flex flex-col sm:flex-row gap-2">
-                        <Button onClick={() => handleReveal(profile)} className="w-full sm:w-auto" variant={revealedIds.has(profile.id) ? "default" : "outline"}>
-                          <ExternalLink className="w-4 h-4 mr-2" />
-                          {revealedIds.has(profile.id) ? "Open LinkedIn Profile" : "Reveal LinkedIn"}
-                        </Button>
-                        <Button onClick={() => setContactOpenId(prev => prev === profile.id ? null : profile.id)} className="w-full sm:w-auto" variant="outline">
-                          Contact Candidate
-                        </Button>
-                      </div>
-                      {contactOpenId === profile.id && (
-                        <div className="mt-4">
-                          <ContactCandidate profileId={profile.id} />
+                      <div className="rounded-lg border bg-gray-50 dark:bg-gray-900/30 p-4">
+                        <p className="text-sm whitespace-pre-wrap">{profile.about_me}</p>
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          {profile.core_skills.map((s) => (
+                            <Badge key={s} variant="outline">{s}</Badge>
+                          ))}
                         </div>
-                      )}
+                      </div>
+                      <div className="rounded-lg border bg-white dark:bg-gray-900/40 p-3">
+                        <div className="flex flex-col sm:flex-row gap-2">
+                          <Button onClick={() => handleReveal(profile)} className="w-full sm:w-auto" variant={revealedIds.has(profile.id) ? "default" : "outline"}>
+                            <ExternalLink className="w-4 h-4 mr-2" />
+                            {revealedIds.has(profile.id) ? "Open LinkedIn Profile" : "Reveal LinkedIn"}
+                          </Button>
+                          <Button onClick={() => setContactOpenId(prev => prev === profile.id ? null : profile.id)} className="w-full sm:w-auto" variant="outline">
+                            Contact Candidate
+                          </Button>
+                        </div>
+                        {contactOpenId === profile.id && (
+                          <div className="mt-4">
+                            <ContactCandidate profileId={profile.id} />
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </AccordionContent>
                 </AccordionItem>
