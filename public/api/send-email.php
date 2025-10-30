@@ -22,7 +22,7 @@ $parts = explode(' ', $authHeader);
 $provided = isset($parts[0], $parts[1]) && strtolower($parts[0]) === 'bearer' ? $parts[1] : '';
 
 // Read secret from env if available, else from placeholder string
-$expected = getenv('MAIL_WEBHOOK_SECRET') ?: 'REPLACE_ME_WITH_A_STRONG_SECRET';
+$expected = getenv('MAIL_WEBHOOK_SECRET') ?: 'sadfjf@@$9asf;askf($(@';
 
 if (!$provided || !$expected || !hash_equals($expected, $provided)) {
   http_response_code(403);
