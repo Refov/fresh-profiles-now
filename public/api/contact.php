@@ -1,4 +1,9 @@
 <?php
+// Optional local config loader (server-only). Create api/_config.local.php with putenv calls.
+$localCfg = __DIR__ . '/_config.local.php';
+if (file_exists($localCfg)) {
+  include $localCfg;
+}
 header('Content-Type: application/json');
 
 // CORS for form posting if needed

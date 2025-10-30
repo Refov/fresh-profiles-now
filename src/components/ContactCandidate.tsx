@@ -4,7 +4,6 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import TurnstileWidget from "@/components/TurnstileWidget";
 
 interface ContactCandidateProps {
   profileId: string;
@@ -16,7 +15,7 @@ const ContactCandidate = ({ profileId }: ContactCandidateProps) => {
   const [message, setMessage] = useState("");
   const [step, setStep] = useState<"compose" | "sent">("compose");
   const [loading, setLoading] = useState(false);
-  const [turnstileToken, setTurnstileToken] = useState<string>("");
+  // No Turnstile on stage for simplicity
 
   const sendMessage = async () => {
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(recruiterEmail) || message.trim().length < 10) {
@@ -28,7 +27,7 @@ const ContactCandidate = ({ profileId }: ContactCandidateProps) => {
       const res = await fetch("/api/contact.php", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ recruiterEmail, profileId, message, turnstileToken }),
+        body: JSON.stringify({ recruiterEmail, profileId, message }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok || data?.error) {
@@ -55,7 +54,6 @@ const ContactCandidate = ({ profileId }: ContactCandidateProps) => {
             <Label htmlFor="message">Message</Label>
             <Textarea id="message" rows={5} placeholder="Introduce yourself, role, location, and next steps..." value={message} onChange={(e) => setMessage(e.target.value)} />
           </div>
-          <TurnstileWidget onVerify={setTurnstileToken} />
           <Button className="w-full" disabled={loading} onClick={sendMessage}>{loading ? "Sending..." : "Send Message"}</Button>
           <p className="text-xs text-muted-foreground">We’ll send your message to the candidate via Refov. Your email is kept private and used as Reply-To.</p>
         </div>
