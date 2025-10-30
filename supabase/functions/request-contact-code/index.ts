@@ -89,20 +89,30 @@ serve(async (req) => {
       );
     }
 
-    // Send email via Resend API if configured
-    const resendKey = Deno.env.get("RESEND_API_KEY");
-    if (resendKey) {
-      const from = Deno.env.get("RESEND_FROM") || "Refov <no-reply@refov.com>";
-      await fetch("https://api.resend.com/emails", {
+    // Send email through self-hosted webhook (no third-party provider)
+    const webhookUrl = Deno.env.get("MAIL_WEBHOOK_URL");
+    const webhookSecret = Deno.env.get("MAIL_WEBHOOK_SECRET") || "";
+    if (webhookUrl && webhookSecret) {
+      const mailRes = await fetch(webhookUrl, {
         method: "POST",
-        headers: { "Authorization": `Bearer ${resendKey}`, "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${webhookSecret}`,
+        },
         body: JSON.stringify({
-          from,
-          to: [recruiterEmail],
+          to: recruiterEmail,
           subject: "Verify your email to contact candidate",
           text: `Your verification code is ${code}. It expires in 15 minutes.`,
         }),
       });
+      if (!mailRes.ok) {
+        const errText = await mailRes.text().catch(() => "");
+        console.error("Webhook send failed:", mailRes.status, errText);
+        return new Response(
+          JSON.stringify({ error: "Failed to send verification email" }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 502 }
+        );
+      }
     } else {
       console.log("[DEV] Verification code for", recruiterEmail, code);
     }

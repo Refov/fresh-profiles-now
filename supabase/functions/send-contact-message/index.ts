@@ -99,21 +99,31 @@ serve(async (req) => {
       );
     }
 
-    // Send email to candidate via Resend if configured
-    const resendKey = Deno.env.get("RESEND_API_KEY");
-    if (resendKey) {
-      const from = Deno.env.get("RESEND_FROM") || "Refov <no-reply@refov.com>";
-      await fetch("https://api.resend.com/emails", {
+    // Send email to candidate through self-hosted webhook
+    const webhookUrl = Deno.env.get("MAIL_WEBHOOK_URL");
+    const webhookSecret = Deno.env.get("MAIL_WEBHOOK_SECRET") || "";
+    if (webhookUrl && webhookSecret) {
+      const mailRes = await fetch(webhookUrl, {
         method: "POST",
-        headers: { "Authorization": `Bearer ${resendKey}`, "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${webhookSecret}`,
+        },
         body: JSON.stringify({
-          from,
-          to: [profile.email],
+          to: profile.email,
           subject: "New message from a recruiter via Refov",
           text: `From: ${recruiterEmail}\n\n${message}`,
           reply_to: recruiterEmail,
         }),
       });
+      if (!mailRes.ok) {
+        const errText = await mailRes.text().catch(() => "");
+        console.error("Webhook send failed:", mailRes.status, errText);
+        return new Response(
+          JSON.stringify({ error: "Failed to send email" }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 502 }
+        );
+      }
     } else {
       console.log("[DEV] Would send message to", profile.email, "from", recruiterEmail, "message:", message);
     }
