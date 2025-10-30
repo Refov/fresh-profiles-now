@@ -321,7 +321,7 @@ const PostProfile = () => {
                   />
                 </div>
                 <div className="space-y-2 col-span-2">
-                  <Label htmlFor="email">Email (not shown publicly, used for contact)</Label>
+                  <Label htmlFor="email">Email (recruiters can contact you from the site without seeing your email)</Label>
                   <Input
                     id="email"
                     type="email"
@@ -329,6 +329,7 @@ const PostProfile = () => {
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   />
+                  <p className="text-xs text-muted-foreground">Recruiters can message you directly via Refov; your email is never shown publicly.</p>
                 </div>
               </div>
 
