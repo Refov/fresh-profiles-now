@@ -72,8 +72,8 @@ if ($turnstileSecret) {
 }
 
 // Fetch candidate email from Supabase REST
-$supabaseUrl = getenv('SUPABASE_URL') ?: getenv('REFOV_SUPABASE_URL');
-$serviceKey = getenv('SUPABASE_SERVICE_ROLE_KEY') ?: getenv('REFOV_SUPABASE_SERVICE_ROLE_KEY');
+$supabaseUrl = getenv('SUPABASE_URL') ?: (getenv('REFOV_SUPABASE_URL') ?: getenv('SB_URL'));
+$serviceKey = getenv('SUPABASE_SERVICE_ROLE_KEY') ?: (getenv('REFOV_SUPABASE_SERVICE_ROLE_KEY') ?: (getenv('SUPABASE_SERV') ?: (getenv('SR_KEY') ?: getenv('SUPA_SR_KEY'))));
 // Local secrets fallback: drop a server-only file at public/api/_secrets.php with putenv calls
 if (!$supabaseUrl || !$serviceKey) {
   $fallback = __DIR__ . '/_secrets.php';
