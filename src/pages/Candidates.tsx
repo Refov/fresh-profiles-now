@@ -264,7 +264,7 @@ const Candidates = () => {
                     </div>
                   </AccordionTrigger>
                   <AccordionContent>
-                    <div className="p-4 pt-0 space-y-4">
+                    <div className="p-0 pt-2 space-y-4">
                       <div className="rounded-lg border bg-gray-50 dark:bg-gray-900/30 p-4">
                         <p className="text-sm whitespace-pre-wrap">{profile.about_me}</p>
                         <div className="mt-3 flex flex-wrap gap-2">
