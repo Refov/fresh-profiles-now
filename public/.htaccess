@@ -1,3 +1,23 @@
+Options -Indexes
+
+RewriteEngine On
+
+# Deny direct access to private underscore PHP files (e.g., _config.local.php)
+<FilesMatch "^_.*\.php$">
+  Require all denied
+</FilesMatch>
+
+# Allow direct access to API endpoints (do not rewrite to SPA)
+RewriteRule ^api/ - [L]
+
+# Serve existing files and directories as-is
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule . - [L]
+
+# SPA fallback
+RewriteRule . /index.html [L]
+
 # Enable URL rewriting
 RewriteEngine On
 

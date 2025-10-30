@@ -19,4 +19,5 @@ export interface Profile {
   core_skills: string[]
   created_at: string
   expires_at: string
+  email: string
 }

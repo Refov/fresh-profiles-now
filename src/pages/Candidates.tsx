@@ -12,6 +12,7 @@ import { getProfiles, ProfileFilters, ProfileResult } from "@/lib/supabaseProfil
 import { useToast } from "@/hooks/use-toast";
 import { Profile } from "@/lib/supabase";
 import { SEO } from "@/components/SEO";
+import ContactCandidate from "@/components/ContactCandidate";
 
 const Candidates = () => {
   const navigate = useNavigate();
@@ -28,6 +29,7 @@ const Candidates = () => {
   const [hasMore, setHasMore] = useState(true);
   const [revealedIds, setRevealedIds] = useState<Set<string>>(new Set());
   const [total, setTotal] = useState(0);
+  const [contactOpenId, setContactOpenId] = useState<string | null>(null);
   const ITEMS_PER_PAGE = 20;
 
   // AI-optimized schema for job posting aggregate (built dynamically)
@@ -262,18 +264,28 @@ const Candidates = () => {
                     </div>
                   </AccordionTrigger>
                   <AccordionContent>
-                    <div className="p-4 pt-0 space-y-4">
-                      <p className="text-sm whitespace-pre-wrap">{profile.about_me}</p>
-                      <div className="flex flex-wrap gap-2">
+                    <div className="p-0 pt-2">
+                      <div className="text-sm whitespace-pre-wrap">{profile.about_me}</div>
+                      <div className="mt-3 flex flex-wrap gap-2">
                         {profile.core_skills.map((s) => (
                           <Badge key={s} variant="outline">{s}</Badge>
                         ))}
                       </div>
-                      <div className="pt-2">
-                        <Button onClick={() => handleReveal(profile)} className="w-full sm:w-auto" variant={revealedIds.has(profile.id) ? "default" : "outline"}>
-                          <ExternalLink className="w-4 h-4 mr-2" />
-                          {revealedIds.has(profile.id) ? "Open LinkedIn Profile" : "Reveal LinkedIn"}
-                        </Button>
+                      <div className="border-t pt-4 mt-4">
+                        <div className="flex flex-col sm:flex-row gap-2">
+                          <Button onClick={() => handleReveal(profile)} className="w-full sm:w-auto" variant={revealedIds.has(profile.id) ? "default" : "outline"}>
+                            <ExternalLink className="w-4 h-4 mr-2" />
+                            {revealedIds.has(profile.id) ? "Open LinkedIn Profile" : "Reveal LinkedIn"}
+                          </Button>
+                          <Button onClick={() => setContactOpenId(prev => prev === profile.id ? null : profile.id)} className="w-full sm:w-auto" variant="outline">
+                            Contact Candidate
+                          </Button>
+                        </div>
+                        {contactOpenId === profile.id && (
+                          <div className="mt-4">
+                            <ContactCandidate profileId={profile.id} />
+                          </div>
+                        )}
                       </div>
                     </div>
                   </AccordionContent>

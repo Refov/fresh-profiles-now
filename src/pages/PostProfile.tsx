@@ -68,6 +68,7 @@ const PostProfile = () => {
     aboutMe: "",
     linkedinUrl: "",
     coreSkills: [] as string[],
+    email: "", 
     agreedToTerms: false,
   });
 
@@ -171,6 +172,15 @@ const PostProfile = () => {
       return;
     }
 
+    if (!formData.email.trim() || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(formData.email)) {
+      toast({
+        title: "Valid email required",
+        description: "Please enter a valid email address (not displayed publicly)",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (!formData.aboutMe.trim()) {
       toast({
         title: "About Me required",
@@ -233,6 +243,7 @@ const PostProfile = () => {
         about_me: formData.aboutMe,
         linkedin_url: formData.linkedinUrl,
         core_skills: formData.coreSkills,
+        email: formData.email,
       });
       console.log('PostProfile: saveProfile result:', result);
 
@@ -406,6 +417,28 @@ const PostProfile = () => {
               </div>
 
               <div className="space-y-2">
+                <Label>Core Skills (max 8)</Label>
+                <TagInput
+                  value={formData.coreSkills}
+                  onChange={(skills) => setFormData({ ...formData, coreSkills: skills })}
+                  maxTags={8}
+                  placeholder="Type a skill and press Enter"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="email">Email (recruiters can contact you from the site without seeing your email)</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  required
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                />
+                <p className="text-xs text-muted-foreground">Recruiters can message you directly via Refov; your email is never shown publicly.</p>
+              </div>
+
+              <div className="space-y-2">
                 <Label htmlFor="linkedinUrl">LinkedIn Profile URL</Label>
                 <Input
                   id="linkedinUrl"
@@ -417,15 +450,7 @@ const PostProfile = () => {
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label>Core Skills (max 8)</Label>
-                <TagInput
-                  value={formData.coreSkills}
-                  onChange={(skills) => setFormData({ ...formData, coreSkills: skills })}
-                  maxTags={8}
-                  placeholder="Type a skill and press Enter"
-                />
-              </div>
+              
 
               <div className="space-y-2">
                 <Label htmlFor="spamCheck">

@@ -140,7 +140,7 @@ const Index = () => {
                   <span className="text-2xl">🎯</span>
                 </div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">Direct Contact</h3>
-                <p className="text-gray-600">Connect directly via LinkedIn, no middleman</p>
+                <p className="text-gray-600">Message directly to candidates’ mailboxes</p>
               </div>
             </div>
           </div>

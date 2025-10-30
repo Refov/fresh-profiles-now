@@ -45,8 +45,14 @@ const Privacy = () => {
                 <li>Professional summary (about me)</li>
                 <li>Core skills</li>
                 <li>LinkedIn profile URL</li>
+                <li>
+                  Candidate email address (kept private and used only to deliver recruiter messages through our site; never displayed publicly)
+                </li>
                 <li>Profile creation timestamp</li>
               </ul>
+              <p className="text-gray-700 mt-3">
+                We do not collect or store recruiter email addresses. When a recruiter contacts a candidate, the recruiter email is used only transiently to set the <em>Reply‑To</em> header and is not retained by us.
+              </p>
             </section>
 
             <section>
@@ -57,6 +63,9 @@ const Privacy = () => {
               <ul className="list-disc pl-6 text-gray-700 space-y-2">
                 <li>Display your profile to recruiters and potential employers</li>
                 <li>Enable direct contact through your LinkedIn profile</li>
+                <li>
+                  Deliver messages from recruiters to your private email address via our contact form (your email is not shown; we forward the message and set the recruiter email as Reply‑To)
+                </li>
                 <li>Filter and search functionality for recruiters</li>
                 <li>Automatically manage profile expiration</li>
               </ul>
@@ -66,7 +75,7 @@ const Privacy = () => {
               <h2 className="text-2xl font-semibold text-gray-900 mb-4">3. Data Retention and Automatic Deletion</h2>
               <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mb-4">
                 <p className="text-blue-800 font-medium">
-                  <strong>Important:</strong> Your profile and all associated data will be automatically and permanently deleted after 30 days from the date of creation.
+                  <strong>Important:</strong> Your profile and all associated data (including the candidate email address) will be automatically and permanently deleted after 30 days from the date of creation.
                 </p>
               </div>
               <p className="text-gray-700 mb-4">
@@ -91,6 +100,9 @@ const Privacy = () => {
                 <li>Not sold to third parties</li>
                 <li>Not shared with marketing companies</li>
                 <li>Not used for advertising purposes</li>
+                <li>
+                  Candidate email addresses are never displayed publicly or shared; they are used only to forward recruiter messages initiated on our site.
+                </li>
               </ul>
             </section>
 
@@ -130,7 +142,7 @@ const Privacy = () => {
                 We use the following third-party services:
               </p>
               <ul className="list-disc pl-6 text-gray-700 space-y-2">
-                <li><strong>Supabase:</strong> Database hosting and management</li>
+                <li><strong>Supabase:</strong> Database hosting and management, including server-side functions used to relay recruiter messages to candidates without exposing emails.</li>
                 <li><strong>LinkedIn:</strong> External profile links (we do not control LinkedIn's privacy practices)</li>
               </ul>
             </section>

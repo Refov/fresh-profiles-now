@@ -79,6 +79,10 @@ export async function saveProfile(profileData: Omit<Profile, 'id' | 'created_at'
     if (profileData.about_me.length < 20) {
       return { success: false, error: 'About me section must be at least 20 characters' };
     }
+    // Basic email validation
+    if (!profileData.email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(profileData.email)) {
+      return { success: false, error: 'Valid email address required' }
+    }
     // Normalize LinkedIn URL
     const normalizedLinkedIn = normalizeLinkedInUrl(profileData.linkedin_url)
     

@@ -49,7 +49,8 @@ const Terms = () => {
                 <li>Job seekers to post their professional profiles</li>
                 <li>Recruiters to browse and contact potential candidates</li>
                 <li>Direct communication through LinkedIn profiles</li>
-                <li>Automatic profile expiration after 30 days</li>
+                <li>Private contact relay: candidates provide an email that remains hidden; recruiters send messages via our site and their email is used only as Reply‑To</li>
+                <li>Automatic profile expiration and deletion (including candidate email) after 30 days</li>
               </ul>
             </section>
 
@@ -68,6 +69,7 @@ const Terms = () => {
                 <li>Use the platform for legitimate recruitment purposes only</li>
                 <li>Respect candidate privacy and professional boundaries</li>
                 <li>Do not misuse or spam candidate information</li>
+                <li>Do not attempt to discover, scrape, or expose hidden candidate email addresses</li>
                 <li>Comply with applicable employment and privacy laws</li>
               </ul>
             </section>
@@ -90,7 +92,7 @@ const Terms = () => {
               <h2 className="text-2xl font-semibold text-gray-900 mb-4">5. Profile Expiration</h2>
               <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
                 <p className="text-yellow-800 font-medium">
-                  <strong>Important:</strong> All profiles automatically expire and are permanently deleted after 30 days from creation.
+                  <strong>Important:</strong> All profiles automatically expire and are permanently deleted after 30 days from creation. This deletion includes the candidate email address and any associated profile data.
                 </p>
               </div>
               <ul className="list-disc pl-6 text-gray-700 space-y-2">
@@ -117,7 +119,7 @@ const Terms = () => {
             <section>
               <h2 className="text-2xl font-semibold text-gray-900 mb-4">7. Privacy and Data Protection</h2>
               <p className="text-gray-700">
-                Your privacy is important to us. Please review our <a href="/privacy" className="text-blue-600 hover:text-blue-700">Privacy Policy</a> to understand how we collect, use, and protect your information.
+                Your privacy is important to us. Please review our <a href="/privacy" className="text-blue-600 hover:text-blue-700">Privacy Policy</a> to understand how we collect, use, and protect your information. In short, we collect candidate email addresses only to relay recruiter messages; we do not store recruiter emails and we automatically delete candidate data after 30 days.
               </p>
             </section>
 
