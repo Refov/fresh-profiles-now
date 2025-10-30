@@ -4,6 +4,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+  "Access-Control-Max-Age": "86400",
 };
 
 serve(async (req) => {
@@ -22,8 +24,16 @@ serve(async (req) => {
       );
     }
 
-    const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
-    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+    const supabaseUrl =
+      Deno.env.get("SB_URL") ??
+      Deno.env.get("REFOV_SUPABASE_URL") ??
+      Deno.env.get("SUPABASE_URL") ??
+      "";
+    const serviceKey =
+      Deno.env.get("SR_KEY") ??
+      Deno.env.get("REFOV_SUPABASE_SERVICE_ROLE_KEY") ??
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ??
+      "";
     if (!supabaseUrl || !serviceKey) {
       return new Response(
         JSON.stringify({ error: "Server not configured (missing SUPABASE_URL or SERVICE_ROLE key)" }),
